@@ -1,0 +1,54 @@
+<?php
+
+use App\Http\Controllers\FileController;
+use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Public - redirect to login or dashboard
+Route::get('/', function () {
+    return auth()->check() ? redirect('/dashboard') : redirect('/login');
+});
+
+// Auth routes (Volt-based)
+Volt::route('/login', 'auth.login')->name('login');
+Volt::route('/register', 'auth.register')->name('register');
+
+Route::post('/logout', function () {
+    auth()->logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
+
+// Protected routes
+Route::middleware('auth')->group(function () {
+    // Dashboard
+    Volt::route('/dashboard', 'dashboard')->name('dashboard');
+
+    // Bundles
+    Volt::route('/bundles', 'bundles.index')->name('bundles.index');
+    Volt::route('/bundles/create', 'bundles.create')->name('bundles.create');
+    Volt::route('/bundles/{bundle}', 'bundles.show')->name('bundles.show');
+    Volt::route('/bundles/{bundle}/detail', 'bundles.detail')->name('bundles.detail');
+    Volt::route('/bundles/{bundle}/print-label', 'bundles.print-label')->name('bundles.print-label');
+
+    // Kategori (within bundle)
+    Volt::route('/bundles/{bundle}/kategori/{kategori}', 'bundles.kategori-show')->name('kategori.show');
+
+    // Dokumen
+    Volt::route('/dokumen/{dokumen}', 'dokumen.show')->name('dokumen.show');
+    Volt::route('/dokumen/{dokumen}/print', 'dokumen.print')->name('dokumen.print');
+
+    // Pencarian
+    Volt::route('/pencarian', 'pencarian')->name('pencarian');
+
+    // File download & preview (protected)
+    Route::get('/file/{file}/download', [FileController::class, 'download'])->name('file.download');
+    Route::get('/file/{file}/preview', [FileController::class, 'preview'])->name('file.preview');
+});
