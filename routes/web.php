@@ -51,4 +51,14 @@ Route::middleware('auth')->group(function () {
     // File download & preview (protected)
     Route::get('/file/{file}/download', [FileController::class, 'download'])->name('file.download');
     Route::get('/file/{file}/preview', [FileController::class, 'preview'])->name('file.preview');
+
+    // Payments API Sync & Print
+    Volt::route('/payments', 'payments.index')->name('payments.index');
+    Route::post('/payments/sync/{id}', [\App\Http\Controllers\PaymentController::class, 'sync'])->name('payments.sync');
+    Route::post('/payments/sync-batch', [\App\Http\Controllers\PaymentController::class, 'syncBatch'])->name('payments.sync-batch');
+    Route::get('/payments/{payment}/print', [\App\Http\Controllers\PaymentController::class, 'print'])->name('payments.print');
+    Route::post('/payments/{payment}/save-print', [\App\Http\Controllers\PaymentController::class, 'savePrint'])->name('payments.save-print');
+
+    // PDF to Image Converter
+    Volt::route('/pdf-converter', 'pdf-converter')->name('pdf-converter');
 });

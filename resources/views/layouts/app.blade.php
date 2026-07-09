@@ -1757,6 +1757,24 @@
                         </div>
                         <span class="nav-label">Pencarian</span>
                     </a>
+
+                    <a href="/payments" class="nav-link {{ request()->is('payments*') ? 'active' : '' }}" title="Tarik SPP/SPM">
+                        <div class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+                            </svg>
+                        </div>
+                        <span class="nav-label">Tarik SPP/SPM</span>
+                    </a>
+
+                    <a href="/pdf-converter" class="nav-link {{ request()->is('pdf-converter*') ? 'active' : '' }}" title="Konverter PDF">
+                        <div class="nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <span class="nav-label">Konverter PDF</span>
+                    </a>
                 </div>
 
                 @auth
