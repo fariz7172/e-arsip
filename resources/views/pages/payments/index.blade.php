@@ -2,32 +2,120 @@
 
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
+use App\Models\Bundle;
 use App\Models\Payment;
+use Livewire\Attributes\Url;
 
 new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('Tarik Data Pembayaran')] class extends Component {
     use WithPagination;
 
     public $search = '';
 
+    #[Url]
+    public $perPage = 10;
+
+    // Modal state
+    public bool $showModal = false;
+    public ?int $selectedPaymentId = null;
+
+    // Bundle Form State
+    public $uploadOption = 'existing'; // 'existing' or 'new'
+    public $searchBundle = '';
+    public $selectedBundleId = null;
+    
+    public $newBundleNama = '';
+    public $newBundleKode = '';
+    public $newBundleTahun = '';
+
     public function updatingSearch()
     {
         $this->resetPage();
     }
 
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
+    public function openModal($paymentId)
+    {
+        $this->selectedPaymentId = $paymentId;
+        $this->showModal = true;
+        
+        $payment = Payment::find($paymentId);
+        if ($payment && $payment->bundle_id) {
+            $this->uploadOption = 'existing';
+            $this->selectedBundleId = $payment->bundle_id;
+        } else {
+            $this->uploadOption = 'new';
+            $this->newBundleTahun = date('Y');
+            $this->newBundleNama = 'Berkas SPN ' . ($payment->no_spm ?? '');
+        }
+    }
+
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun']);
+    }
+
+    public function saveBundle()
+    {
+        $payment = Payment::findOrFail($this->selectedPaymentId);
+
+        if ($this->uploadOption === 'existing') {
+            $this->validate(['selectedBundleId' => 'required|exists:bundles,id'], ['selectedBundleId.required' => 'Pilih bundle yang ada terlebih dahulu.']);
+            $payment->update(['bundle_id' => $this->selectedBundleId]);
+        } else {
+            $this->validate([
+                'newBundleNama' => 'required|string|max:255',
+                'newBundleTahun' => 'required|integer',
+            ]);
+            $bundle = Bundle::create([
+                'nama' => $this->newBundleNama,
+                'kode' => $this->newBundleKode,
+                'tahun' => $this->newBundleTahun,
+                'user_id' => auth()->id()
+            ]);
+            $payment->update(['bundle_id' => $bundle->id]);
+        }
+
+        session()->flash('success', 'Berhasil menghubungkan pembayaran dengan bundle.');
+        $this->closeModal();
+    }
+
     public function with(): array
     {
-        $query = Payment::orderBy('id', 'desc');
+        $query = Payment::with('bundle')->orderBy('id', 'desc');
 
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('id', 'like', '%' . $this->search . '%')
                   ->orWhere('no_spm', 'like', '%' . $this->search . '%')
-                  ->orWhere('keperluan', 'like', '%' . $this->search . '%');
+                  ->orWhere('keperluan', 'like', '%' . $this->search . '%')
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(vendor, '$.nama_perusahaan')) LIKE ?", ['%' . $this->search . '%']);
             });
         }
 
+        $bundleQuery = Bundle::select('id', 'nama', 'kode', 'tahun')->orderBy('created_at', 'desc');
+        if (!empty($this->searchBundle)) {
+            $bundleQuery->where(function($q) {
+                $q->where('nama', 'like', '%' . $this->searchBundle . '%')
+                  ->orWhere('kode', 'like', '%' . $this->searchBundle . '%');
+            });
+        }
+        $bundles = $bundleQuery->limit(50)->get();
+
+        if ($this->selectedBundleId && !$bundles->contains('id', $this->selectedBundleId)) {
+            $selected = Bundle::find($this->selectedBundleId);
+            if ($selected) {
+                $bundles->prepend($selected);
+            }
+        }
+
         return [
-            'payments' => $query->paginate(10)
+            'payments' => $query->paginate($this->perPage),
+            'bundles' => $bundles
         ];
     }
 }; ?>
@@ -79,8 +167,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;color:var(--primary);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 Data yang Pernah Ditarik
             </h2>
-            <div style="width: 300px; max-width:100%;">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
+            <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 400px; justify-content: flex-end;">
+                <select wire:model.live="perPage" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size:0.9rem; background: white; cursor: pointer;">
+                    <option value="10">10 Data</option>
+                    <option value="15">15 Data</option>
+                    <option value="50">50 Data</option>
+                    <option value="100">100 Data</option>
+                    <option value="500">500 Data</option>
+                </select>
+                <div style="flex: 1; min-width: 200px;">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
+                </div>
             </div>
         </div>
 
@@ -114,10 +211,16 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                     Rp {{ number_format($payment->jumlah, 0, ',', '.') }}
                                 </td>
                                 <td>
-                                    <a href="{{ route('payments.print', $payment->id) }}" class="btn btn-sm btn-primary" style="display: inline-flex; align-items: center; gap: 4px;">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                                        Cetak
-                                    </a>
+                                    <div style="display: flex; gap: 6px;">
+                                        <button wire:click="openModal({{ $payment->id }})" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border-color); background: white;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;color:var(--primary);"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                            @if($payment->bundle_id) <span style="color:var(--primary);">Bundle #{{ $payment->bundle_id }}</span> @else Bundle @endif
+                                        </button>
+                                        <a href="{{ route('payments.print', $payment->id) }}" class="btn btn-sm btn-primary" style="display: inline-flex; align-items: center; gap: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                            Cetak
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -139,39 +242,115 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         @endif
     </div>
 
-    <style>
-        /* Custom Pagination Styles */
-        .custom-pagination {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 4px;
-        }
-        .custom-pagination .page-item {
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .custom-pagination button.page-item:hover {
-            background: var(--primary-light);
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-        .custom-pagination .page-item.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .custom-pagination .page-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: #f8fafc;
-        }
-    </style>
+    <!-- Modal Upload / Hubungkan ke Bundle -->
+    @if($showModal)
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;">
+            <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+                
+                <!-- Modal Header -->
+                <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white; z-index: 10;">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--text-primary);">Hubungkan Bukti Fisik</h3>
+                    <button wire:click="closeModal" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); line-height: 1;">&times;</button>
+                </div>
+
+                <!-- Modal Body -->
+                <form wire:submit.prevent="saveBundle" style="padding: 24px;">
+                    
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 20px;">
+                        Pilih Bundle Arsip yang sudah ada, atau buat Bundle baru untuk menyimpan fisik dokumen pembayaran ini.
+                    </p>
+
+                    <!-- Option 1: Existing Bundle -->
+                    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid {{ $uploadOption === 'existing' ? 'var(--primary)' : 'var(--border-color)' }}; border-radius: 8px; background: {{ $uploadOption === 'existing' ? 'var(--primary-light)' : 'white' }}; transition: all 0.2s;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: {{ $uploadOption === 'existing' ? '12px' : '0' }};">
+                            <input type="radio" wire:model.live="uploadOption" value="existing" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                            <span style="font-weight: 700; color: var(--text-primary);">Pilih Bundle Arsip Tersedia</span>
+                        </label>
+                        
+                        @if($uploadOption === 'existing')
+                            <div style="padding-left: 24px;">
+                                <!-- Custom Dropdown for Livewire Search -->
+                                <div x-data="{ open: false }" style="position: relative;" @click.away="open = false">
+                                    
+                                    <!-- Selected Display -->
+                                    <div @click="open = !open" style="border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">
+                                            @if($selectedBundleId)
+                                                {{ collect($bundles)->firstWhere('id', $selectedBundleId)?->nama ?? 'Pilih Bundle...' }}
+                                                <span style="color:var(--text-muted); font-size:0.8rem; font-weight:normal;">({{ collect($bundles)->firstWhere('id', $selectedBundleId)?->kode ?? '-' }})</span>
+                                            @else
+                                                <span style="color: var(--text-muted); font-weight: normal;">-- Cari dan Pilih Bundle --</span>
+                                            @endif
+                                        </span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; color: var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </div>
+                                    
+                                    <!-- Dropdown List -->
+                                    <div x-show="open" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50;">
+                                        <div style="padding: 8px; border-bottom: 1px solid var(--border-color);">
+                                            <input type="text" wire:model.live.debounce.300ms="searchBundle" placeholder="Ketik nama atau kode bundle untuk mencari..." style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; outline: none; font-size: 0.85rem;">
+                                        </div>
+                                        
+                                        <div style="max-height: 200px; overflow-y: auto;">
+                                            @if(count($bundles) === 0)
+                                                <div style="padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; text-align: center;">Tidak ada hasil ditemukan</div>
+                                            @else
+                                                @foreach($bundles as $b)
+                                                    <div wire:click="$set('selectedBundleId', {{ $b->id }}); open = false" 
+                                                         style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f8fafc; transition:background 0.2s; {{ $selectedBundleId === $b->id ? 'background: var(--primary-light);' : '' }}" 
+                                                         onmouseover="this.style.background='#f8fafc'" 
+                                                         onmouseout="this.style.background='{{ $selectedBundleId === $b->id ? 'var(--primary-light)' : 'transparent' }}'">
+                                                        <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-primary);">{{ $b->nama }}</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted);">Kode: {{ $b->kode ?? '-' }}</div>
+                                                    </div>
+                                                @endforeach
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                @error('selectedBundleId') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Option 2: New Bundle -->
+                    <div style="margin-bottom: 24px; padding:12px; border:1px solid {{ $uploadOption === 'new' ? 'var(--primary)' : 'var(--border-color)' }}; border-radius:8px; background:{{ $uploadOption === 'new' ? 'var(--primary-light)' : 'white' }};">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom: {{ $uploadOption === 'new' ? '12px' : '0' }};">
+                            <input type="radio" wire:model.live="uploadOption" value="new" style="width:16px; height:16px; accent-color:var(--primary);">
+                            <span style="font-weight:700; color:var(--text-primary);">Buat Bundle Baru</span>
+                        </label>
+                        
+                        @if($uploadOption === 'new')
+                            <div style="padding-left: 24px; display:flex; flex-direction:column; gap:12px;">
+                                <div>
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">Nama Bundle *</label>
+                                    <input type="text" wire:model="newBundleNama" class="form-input" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:0.9rem;" placeholder="Misal: Berkas SPM 123">
+                                    @error('newBundleNama') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
+                                </div>
+                                <div style="display:flex; gap:12px;">
+                                    <div style="flex:1;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">Kode Bundle</label>
+                                        <input type="text" wire:model="newBundleKode" class="form-input" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:0.9rem;">
+                                    </div>
+                                    <div style="width:100px;">
+                                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">Tahun *</label>
+                                        <input type="number" wire:model="newBundleTahun" class="form-input" style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:0.9rem;">
+                                        @error('newBundleTahun') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                        <button type="button" wire:click="closeModal" class="btn" style="background:#f1f5f9; color:var(--text-secondary); font-weight:600;">Batal</button>
+                        <button type="submit" class="btn btn-primary" style="font-weight:700;">
+                            Simpan & Lanjutkan
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-left:4px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

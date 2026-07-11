@@ -2,9 +2,13 @@
 
 use Livewire\Volt\Component;
 use App\Models\Bundle;
+use Livewire\Attributes\Url;
 
 new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public Bundle $bundle;
+
+    #[Url]
+    public string $searchKategori = '';
 
     public function title(): string
     {
@@ -20,7 +24,28 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             },
             'kategoris.dokumens.fileAttachments',
             'kategoris.dokumens.uploader',
+            'suratMasuks',
+            'suratKeluars',
         ]);
+    }
+
+    public function with(): array
+    {
+        $kategorisQuery = $this->bundle->kategoris()
+            ->withCount('dokumens')
+            ->with(['dokumens.fileAttachments', 'dokumens.uploader'])
+            ->orderBy('urutan');
+
+        if (!empty($this->searchKategori)) {
+            $kategorisQuery->where(function($q) {
+                $q->where('nama', 'like', '%' . $this->searchKategori . '%')
+                  ->orWhere('kode', 'like', '%' . $this->searchKategori . '%');
+            });
+        }
+
+        return [
+            'filteredKategoris' => $kategorisQuery->get()
+        ];
     }
 }; ?>
 <div>
@@ -218,17 +243,24 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
     <!-- Action Bar -->
     <div class="flex items-center justify-between mb-6" style="flex-wrap: wrap; gap: 12px;">
-        <h2 style="font-size: 1.2rem; font-weight: 800;">
-            🗂️ Daftar Isi Bundle
-        </h2>
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <h2 style="font-size: 1.2rem; font-weight: 800; margin: 0;">
+                🗂️ Daftar Isi Bundle
+            </h2>
+            <!-- Pencarian Kategori -->
+            <div style="position: relative; width: 260px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" wire:model.live.debounce.300ms="searchKategori" placeholder="Cari nama atau kode kategori..." style="width: 100%; padding: 6px 10px 6px 32px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; outline: none; transition: all 0.2s;">
+            </div>
+        </div>
         <div class="flex gap-2">
             <a href="/bundles/{{ $bundle->id }}" class="btn btn-secondary">Kelola Bundle →</a>
             <a href="/bundles" class="btn btn-secondary">← Kembali</a>
         </div>
     </div>
 
-    @if($bundle->kategoris->count() > 0)
-        @foreach($bundle->kategoris as $index => $kategori)
+    @if($filteredKategoris->count() > 0)
+        @foreach($filteredKategoris as $index => $kategori)
             <div class="kategori-section">
                 <details open>
                     <summary class="kategori-header" style="list-style: none;">
@@ -291,6 +323,86 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div class="empty-state-text">Bundle ini belum memiliki kategori</div>
                 <a href="/bundles/{{ $bundle->id }}" class="btn btn-primary mt-4">Tambah Kategori →</a>
             </div>
+        </div>
+    @endif
+
+    <!-- Surat Masuk Section -->
+    @if($bundle->suratMasuks && $bundle->suratMasuks->count() > 0)
+        <div class="kategori-section" style="margin-top: 24px;">
+            <details open>
+                <summary class="kategori-header" style="list-style: none; background: #f0f9ff; border: 1px solid #bae6fd;">
+                    <div class="kategori-header-left">
+                        <div class="kategori-icon-box" style="background: #e0f2fe;">📥</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 1rem; color: #0369a1;">Surat Masuk</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="badge" style="background: #bae6fd; color: #0369a1;">{{ $bundle->suratMasuks->count() }} surat</span>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">▾</span>
+                    </div>
+                </summary>
+
+                <div class="dokumen-grid">
+                    @foreach($bundle->suratMasuks as $surat)
+                        <div class="dokumen-card">
+                            <a href="/surat-masuk/{{ $surat->id }}/edit" style="text-decoration: none; color: inherit; display: block;">
+                                <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
+                                <div class="dokumen-card-meta">
+                                    <span>📋 {{ $surat->no_surat ?? '-' }}</span>
+                                    <span>🏢 {{ $surat->asal_surat ?? '-' }}</span>
+                                    <span>📅 {{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</span>
+                                </div>
+                                @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)
+                                    <div class="file-mini-list">
+                                        <span class="file-mini-chip pdf">📄 {{ count($surat->scan_file) }} File</span>
+                                    </div>
+                                @endif
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </details>
+        </div>
+    @endif
+
+    <!-- Surat Keluar Section -->
+    @if($bundle->suratKeluars && $bundle->suratKeluars->count() > 0)
+        <div class="kategori-section" style="margin-top: 24px;">
+            <details open>
+                <summary class="kategori-header" style="list-style: none; background: #fdf4ff; border: 1px solid #fbcfe8;">
+                    <div class="kategori-header-left">
+                        <div class="kategori-icon-box" style="background: #fae8ff;">📤</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 1rem; color: #a21caf;">Surat Keluar</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="badge" style="background: #fbcfe8; color: #a21caf;">{{ $bundle->suratKeluars->count() }} surat</span>
+                        <span style="color: var(--text-muted); font-size: 0.9rem;">▾</span>
+                    </div>
+                </summary>
+
+                <div class="dokumen-grid">
+                    @foreach($bundle->suratKeluars as $surat)
+                        <div class="dokumen-card">
+                            <a href="/surat-keluar/{{ $surat->id }}/edit" style="text-decoration: none; color: inherit; display: block;">
+                                <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
+                                <div class="dokumen-card-meta">
+                                    <span>📋 {{ $surat->no_surat ?? '-' }}</span>
+                                    <span>🎯 {{ $surat->tujuan_surat ?? '-' }}</span>
+                                    <span>📅 {{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</span>
+                                </div>
+                                @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)
+                                    <div class="file-mini-list">
+                                        <span class="file-mini-chip pdf">📄 {{ count($surat->scan_file) }} File</span>
+                                    </div>
+                                @endif
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </details>
         </div>
     @endif
 

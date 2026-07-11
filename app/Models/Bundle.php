@@ -33,12 +33,35 @@ class Bundle extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function lokasi(): BelongsTo
+    {
+        return $this->belongsTo(Lokasi::class, 'id_lokasi');
+    }
+
+    public function suratMasuks(): HasMany
+    {
+        return $this->hasMany(SuratMasuk::class);
+    }
+
+    public function suratKeluars(): HasMany
+    {
+        return $this->hasMany(SuratKeluar::class);
+    }
+
     /**
      * Bundle has many kategoris.
      */
     public function kategoris(): HasMany
     {
         return $this->hasMany(Kategori::class)->orderBy('urutan');
+    }
+
+    /**
+     * Bundle has many payments.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 
     /**

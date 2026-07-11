@@ -59,6 +59,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/payments/{payment}/print', [\App\Http\Controllers\PaymentController::class, 'print'])->name('payments.print');
     Route::post('/payments/{payment}/save-print', [\App\Http\Controllers\PaymentController::class, 'savePrint'])->name('payments.save-print');
 
+    // Laporan SPN
+    Volt::route('/laporan-spn', 'laporan-spn.index')->name('laporan-spn.index');
+    Route::get('/laporan-spn/{payment}/print', [\App\Http\Controllers\PaymentController::class, 'printSpn'])->name('laporan-spn.print');
+
     // PDF to Image Converter
     Volt::route('/pdf-converter', 'pdf-converter')->name('pdf-converter');
+    Volt::route('/pdf-compressor', 'pdf-compressor')->name('pdf-compressor');
+    // Buku Agenda - Surat Masuk
+    Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
+    Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
+    Volt::route('/surat-masuk/{id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
+
+    // Buku Agenda - Surat Keluar
+    Volt::route('/surat-keluar', 'surat-keluar.index')->name('surat-keluar.index');
+    Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
+    Volt::route('/surat-keluar/{id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
 });

@@ -32,4 +32,9 @@ class Payment extends Model
         'program_ref' => 'object',
         'kegiatan_ref' => 'object',
     ];
+
+    public function bundle()
+    {
+        return $this->belongsTo(Bundle::class);
+    }
 }

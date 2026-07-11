@@ -104,6 +104,14 @@ class PaymentController extends Controller
     }
 
     /**
+     * Show the SPN print view.
+     */
+    public function printSpn(Payment $payment)
+    {
+        return view('pages.laporan-spn.print', compact('payment'));
+    }
+
+    /**
      * Save print layout data (checklists, text inputs).
      */
     public function savePrint(Request $request, Payment $payment)

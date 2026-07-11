@@ -1,11 +1,21 @@
 <?php
 
 use Livewire\Volt\Component;
+use Livewire\WithPagination;
+use Livewire\Attributes\Url;
 use App\Models\Bundle;
 
 new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('Bundle Arsip')] class extends Component {
+    use WithPagination;
+
+    #[Url]
     public string $search = '';
+    
+    #[Url]
     public string $filterTahun = '';
+
+    #[Url]
+    public $perPage = 12;
 
     // Edit state
     public ?int $editBundleId = null;
@@ -13,6 +23,21 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public string $editKode = '';
     public string $editDeskripsi = '';
     public string $editTahun = '';
+
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterTahun()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
 
     public function with(): array
     {
@@ -31,7 +56,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             $query->where('tahun', $this->filterTahun);
         }
 
-        $bundles = $query->get();
+        $bundles = $query->paginate($this->perPage);
 
         // Get unique years for filter
         $years = Bundle::selectRaw('DISTINCT tahun')->orderByDesc('tahun')->pluck('tahun');
@@ -95,6 +120,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         session()->flash('success', "Bundle '{$this->editNama}' berhasil diperbarui.");
     }
 }; ?>
+<div>
 <style>
     /* ===== Bundle Index Page Styles ===== */
     .bundle-index-header {
@@ -437,7 +463,6 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     .bc-edit-title svg { width: 15px; height: 15px; color: var(--primary); }
 </style>
 
-<div>
     <!-- Page Header -->
     <div class="bundle-index-header">
         <div class="bundle-index-title">
@@ -617,6 +642,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     @endif
                 </div>
             @endforeach
+        </div>
+        
+        <div style="margin-top: 24px;">
+            {{ $bundles->links('vendor.pagination.custom', data: ['scrollTo' => false]) }}
         </div>
     @else
         <div class="card">

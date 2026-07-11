@@ -63,10 +63,6 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         }
 
         $this->validate([
-            'judul' => 'required|string|max:255',
-            'nomorDokumen' => 'nullable|string|max:100',
-            'tanggalDokumen' => 'nullable|date',
-            'keterangan' => 'nullable|string|max:1000',
             'files' => 'required|array|min:1',
             'files.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,webp|max:10240',
         ], [
@@ -76,12 +72,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'files.*.max' => 'Ukuran file maksimal 10MB.',
         ]);
 
+        $judul = pathinfo($this->files[0]->getClientOriginalName(), PATHINFO_FILENAME);
+
         $dokumen = Dokumen::create([
             'kategori_id' => $this->kategori->id,
-            'judul' => $this->judul,
-            'nomor_dokumen' => $this->nomorDokumen ?: null,
-            'tanggal_dokumen' => $this->tanggalDokumen ?: null,
-            'keterangan' => $this->keterangan ?: null,
+            'judul' => $judul,
             'uploaded_by' => auth()->id(),
         ]);
 
@@ -219,31 +214,6 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             <h3 style="font-weight: 700; margin-bottom: 20px;">📤 Upload Dokumen Baru</h3>
 
             <form wire:submit="simpanDokumen">
-                <div class="form-group">
-                    <label class="form-label">Judul Dokumen *</label>
-                    <input type="text" wire:model="judul" class="form-input"
-                           placeholder="contoh: Laporan SDA Q1 2026" autofocus>
-                    @error('judul') <div class="form-error">{{ $message }}</div> @enderror
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Nomor Dokumen</label>
-                        <input type="text" wire:model="nomorDokumen" class="form-input"
-                               placeholder="contoh: DOK/SDA/001/2026">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tanggal Dokumen</label>
-                        <input type="date" wire:model="tanggalDokumen" class="form-input">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Keterangan</label>
-                    <textarea wire:model="keterangan" class="form-textarea" rows="3"
-                              placeholder="Catatan atau keterangan tambahan..."></textarea>
-                </div>
-
                 <div class="form-group">
                     <label class="form-label">File Lampiran * (PDF / Gambar, maks. 10MB)</label>
                     <div class="file-upload-area" 
