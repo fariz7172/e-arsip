@@ -2,12 +2,16 @@
 
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use App\Models\Bundle;
 use App\Models\Payment;
+use App\Models\Kategori;
+use App\Models\Dokumen;
+use App\Models\FileAttachment;
 use Livewire\Attributes\Url;
 
 new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('Tarik Data Pembayaran')] class extends Component {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $search = '';
 
@@ -26,6 +30,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public $newBundleNama = '';
     public $newBundleKode = '';
     public $newBundleTahun = '';
+    
+    public $uploadedFiles = [];
 
     public function updatingSearch()
     {
@@ -56,7 +62,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun']);
+        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun', 'uploadedFiles']);
     }
 
     public function saveBundle()
@@ -78,6 +84,34 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 'created_by' => auth()->id()
             ]);
             $payment->update(['bundle_id' => $bundle->id]);
+        }
+        
+        $bundleToUse = Bundle::find($payment->bundle_id);
+
+        if (!empty($this->uploadedFiles) && $bundleToUse) {
+            $kategori = Kategori::firstOrCreate(
+                ['bundle_id' => $bundleToUse->id, 'nama' => 'Berkas Pendukung SPM'],
+                ['kode' => 'SPM', 'urutan' => 1]
+            );
+
+            $dokumen = Dokumen::create([
+                'kategori_id' => $kategori->id,
+                'judul' => 'Lampiran SPM: ' . ($payment->no_spm ?? '-'),
+                'tanggal_dokumen' => now(),
+                'uploaded_by' => auth()->id()
+            ]);
+
+            foreach ($this->uploadedFiles as $file) {
+                $path = $file->store('dokumen_files', 'public');
+                FileAttachment::create([
+                    'dokumen_id' => $dokumen->id,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'path' => $path,
+                    'disk' => 'public',
+                    'mime_type' => $file->getClientMimeType(),
+                    'ukuran' => $file->getSize()
+                ]);
+            }
         }
 
         session()->flash('success', 'Berhasil menghubungkan pembayaran dengan bundle.');
@@ -313,6 +347,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                         @endif
                     </div>
 
+
                     <!-- Option 2: New Bundle -->
                     <div style="margin-bottom: 24px; padding:12px; border:1px solid {{ $uploadOption === 'new' ? 'var(--primary)' : 'var(--border-color)' }}; border-radius:8px; background:{{ $uploadOption === 'new' ? 'var(--primary-light)' : 'white' }};">
                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom: {{ $uploadOption === 'new' ? '12px' : '0' }};">
@@ -340,6 +375,33 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </div>
                             </div>
                         @endif
+                    </div>
+
+                    <!-- Upload File (Opsional) -->
+                    <div style="margin-bottom: 24px;">
+                        <label class="form-label" style="font-weight:600; color:var(--text-primary);">Upload File Scan/Pendukung (Opsional)</label>
+                        <div style="border: 2px dashed var(--border-color); padding: 24px; border-radius: 8px; text-align: center; background: #f8fafc;">
+                            <input type="file" wire:model="uploadedFiles" multiple class="form-input" style="width: 100%; max-width: 300px; margin: 0 auto; display: block;" accept=".pdf,.jpg,.jpeg,.png">
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">Format: PDF, JPG, PNG. File akan disimpan sebagai dokumen pada bundle terpilih.</p>
+                        </div>
+                        <div wire:loading wire:target="uploadedFiles" style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 600;">
+                            Sedang mengunggah file sementara...
+                        </div>
+                        
+                        @if($uploadedFiles)
+                            <div style="margin-top: 12px; display:flex; flex-direction:column; gap:8px;">
+                                <div style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">File yang dipilih:</div>
+                                @foreach($uploadedFiles as $index => $file)
+                                    <div style="display:flex; justify-content:space-between; align-items:center; background:white; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px; color:var(--primary);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                            <span style="font-size:0.85rem; color:var(--text-primary); font-weight:500;">{{ $file->getClientOriginalName() }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                        @error('uploadedFiles.*') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px;">{{ $message }}</div> @enderror
                     </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
