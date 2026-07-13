@@ -29,6 +29,37 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         ]);
     }
 
+    public function hapusDokumen($id)
+    {
+        if (!auth()->user()->isAdmin()) {
+            session()->flash('error', 'Hanya admin yang dapat menghapus dokumen.');
+            return;
+        }
+
+        $dokumen = \App\Models\Dokumen::find($id);
+        if ($dokumen) {
+            $dokumen->delete(); // Soft delete
+            session()->flash('success', 'Dokumen berhasil dihapus.');
+        }
+    }
+
+    public function hapusKategori($id)
+    {
+        if (!auth()->user()->isAdmin()) {
+            session()->flash('error', 'Hanya admin yang dapat menghapus kategori.');
+            return;
+        }
+
+        $kategori = \App\Models\Kategori::find($id);
+        if ($kategori) {
+            foreach ($kategori->dokumens as $dok) {
+                $dok->delete();
+            }
+            $kategori->delete();
+            session()->flash('success', 'Kategori dan isinya berhasil dihapus.');
+        }
+    }
+
     public function with(): array
     {
         $kategorisQuery = $this->bundle->kategoris()
@@ -259,6 +290,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         </div>
     </div>
 
+    @if(session('success'))
+        <div style="background: #d1fae5; color: #047857; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div style="background: #fee2e2; color: #b91c1c; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-weight: 500;">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if($filteredKategoris->count() > 0)
         @foreach($filteredKategoris as $index => $kategori)
             <div class="kategori-section">
@@ -276,6 +318,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span class="badge badge-info">{{ $kategori->dokumens->count() }} dokumen</span>
                             <a href="/bundles/{{ $bundle->id }}/kategori/{{ $kategori->id }}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation()">Buka →</a>
+                            @if(auth()->user()->isAdmin())
+                                <button wire:click.prevent="hapusKategori({{ $kategori->id }})" 
+                                        wire:confirm="Yakin ingin menghapus kategori '{{ $kategori->nama }}' beserta seluruh dokumen di dalamnya?"
+                                        class="btn btn-sm" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca; padding:4px 8px;" onclick="event.stopPropagation()">Hapus</button>
+                            @endif
                             <span style="color: var(--text-muted); font-size: 0.9rem;">▾</span>
                         </div>
                     </summary>
@@ -284,9 +331,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         <div class="dokumen-grid">
                             @foreach($kategori->dokumens as $dokumen)
                                 <div class="dokumen-card">
-                                    <a href="/dokumen/{{ $dokumen->id }}" style="text-decoration: none; color: inherit; display: block;">
-                                        <div class="dokumen-card-title">{{ $dokumen->judul }}</div>
-                                        <div class="dokumen-card-meta">
+                                    <div style="position:relative;">
+                                        <a href="/dokumen/{{ $dokumen->id }}" style="text-decoration: none; color: inherit; display: block;">
+                                            <div class="dokumen-card-title" style="padding-right:30px;">{{ $dokumen->judul }}</div>
+                                            <div class="dokumen-card-meta">
+
                                             @if($dokumen->nomor_dokumen)
                                                 <span>📋 {{ $dokumen->nomor_dokumen }}</span>
                                             @endif
@@ -304,6 +353,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                             @endforeach
                                         </div>
                                     </a>
+                                    @if(auth()->user()->isAdmin())
+                                        <button wire:click.prevent="hapusDokumen({{ $dokumen->id }})" 
+                                                wire:confirm="Yakin ingin menghapus dokumen '{{ $dokumen->judul }}'?"
+                                                style="position:absolute; top:12px; right:12px; background:white; border:1px solid #fecaca; color:#ef4444; border-radius:6px; padding:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10; box-shadow:0 1px 2px rgba(0,0,0,0.05);"
+                                                title="Hapus Dokumen">
+                                            <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        </button>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

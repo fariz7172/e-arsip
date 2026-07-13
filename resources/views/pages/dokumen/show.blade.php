@@ -293,7 +293,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     @endif
 
     <!-- Back Button -->
-    <div style="margin-top: 24px;">
+    <div style="margin-top: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <a href="/bundles/{{ $dokumen->kategori->bundle->id }}/detail" 
+           class="btn btn-secondary">← Kembali ke Bundle Detail</a>
         <a href="/bundles/{{ $dokumen->kategori->bundle->id }}/kategori/{{ $dokumen->kategori->id }}" 
            class="btn btn-secondary">← Kembali ke {{ $dokumen->kategori->nama }}</a>
     </div>
