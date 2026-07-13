@@ -75,7 +75,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 'nama' => $this->newBundleNama,
                 'kode' => $this->newBundleKode,
                 'tahun' => $this->newBundleTahun,
-                'user_id' => auth()->id()
+                'created_by' => auth()->id()
             ]);
             $payment->update(['bundle_id' => $bundle->id]);
         }
