@@ -99,10 +99,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                             <th style="width: 150px;">Tujuan</th>
                             <th style="width: 250px;">Perihal</th>
                             <th style="width: 150px;">Tembusan</th>
-                            <th style="width: 100px;">Masuk Kasubag</th>
-                            <th style="width: 100px;">Masuk Kasudin</th>
-                            <th style="width: 100px;">Keluar</th>
-                            <th style="width: 100px;">Dikembalikan</th>
+
                             <th style="width: 80px; text-align: center;">Scan</th>
                             <th style="width: 100px; text-align: center;">Aksi</th>
                         </tr>
@@ -118,34 +115,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                     <div style="font-size:0.9rem; font-weight: 600; color:var(--text-primary); max-width:230px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ $surat->perihal }}">{{ $surat->perihal ?? '-' }}</div>
                                 </td>
                                 <td>{{ $surat->tembusan ?? '-' }}</td>
-                                <td>
-                                    @if($surat->tgl_masuk_kasubag)
-                                        <span style="color:var(--success); font-weight: 600;">{{ \Carbon\Carbon::parse($surat->tgl_masuk_kasubag)->format('d/m/y') }}</span>
-                                    @else
-                                        <span style="color:var(--text-muted); font-size: 0.8rem;">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($surat->tgl_masuk_kasudin)
-                                        <span style="color:var(--success); font-weight: 600;">{{ \Carbon\Carbon::parse($surat->tgl_masuk_kasudin)->format('d/m/y') }}</span>
-                                    @else
-                                        <span style="color:var(--text-muted); font-size: 0.8rem;">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($surat->tgl_keluar)
-                                        <span style="color:var(--primary); font-weight: 600;">{{ \Carbon\Carbon::parse($surat->tgl_keluar)->format('d/m/y') }}</span>
-                                    @else
-                                        <span style="color:var(--text-muted); font-size: 0.8rem;">-</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($surat->tgl_dikembalikan_tu)
-                                        <span style="color:var(--danger); font-weight: 600;">{{ \Carbon\Carbon::parse($surat->tgl_dikembalikan_tu)->format('d/m/y') }}</span>
-                                    @else
-                                        <span style="color:var(--text-muted); font-size: 0.8rem;">-</span>
-                                    @endif
-                                </td>
+
                                 <td style="text-align: center;">
                                     @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)
                                         @if(count($surat->scan_file) == 1)
