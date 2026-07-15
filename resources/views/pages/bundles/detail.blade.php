@@ -63,6 +63,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public function with(): array
     {
         $kategorisQuery = $this->bundle->kategoris()
+            ->whereNotIn('kode', ['SM', 'SK'])
             ->withCount('dokumens')
             ->with(['dokumens.fileAttachments', 'dokumens.uploader'])
             ->orderBy('urutan');
