@@ -98,7 +98,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                             <th style="width: 120px;">No. Surat</th>
                             <th style="width: 150px;">Tujuan</th>
                             <th style="width: 250px;">Perihal</th>
-                            <th style="width: 150px;">Tembusan</th>
+                          
 
                             <th style="width: 80px; text-align: center;">Scan</th>
                             <th style="width: 100px; text-align: center;">Aksi</th>
@@ -114,8 +114,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 <td>
                                     <div style="font-size:0.9rem; font-weight: 600; color:var(--text-primary); max-width:230px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ $surat->perihal }}">{{ $surat->perihal ?? '-' }}</div>
                                 </td>
-                                <td>{{ $surat->tembusan ?? '-' }}</td>
-
+                              
                                 <td style="text-align: center;">
                                     @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)
                                         @if(count($surat->scan_file) == 1)

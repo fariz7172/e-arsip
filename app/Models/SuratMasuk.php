@@ -20,6 +20,27 @@ class SuratMasuk extends Model
         return $this->belongsTo(Bundle::class);
     }
 
+    public function getFormattedDisposisiAttribute()
+    {
+        if (empty($this->disposisi)) {
+            return '-';
+        }
+
+        $decoded = json_decode($this->disposisi, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $items = $decoded['checkboxes'] ?? [];
+            $custom = $decoded['custom'] ?? '';
+            
+            $result = implode(', ', $items);
+            if (!empty($custom)) {
+                $result .= ($result ? ', ' : '') . $custom;
+            }
+            return $result ?: '-';
+        }
+
+        return $this->disposisi;
+    }
+
     public function dokumen()
     {
         return $this->belongsTo(Dokumen::class, 'dokumen_id');

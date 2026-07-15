@@ -132,7 +132,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </td>
                                 <td>{{ $surat->distribusi ?? '-' }}</td>
                                 <td>
-                                    <div style="max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size: 0.85rem;" title="{{ $surat->disposisi }}">{{ $surat->disposisi ?? '-' }}</div>
+                                    <div style="max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size: 0.85rem;" title="{{ $surat->formatted_disposisi }}">{{ $surat->formatted_disposisi }}</div>
                                 </td>
                                 <td style="text-align: center;">
                                     @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)

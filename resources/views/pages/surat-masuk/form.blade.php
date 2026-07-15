@@ -23,7 +23,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $tgl_keluar;
     public $tgl_dikembalikan;
     public $distribusi;
-    public $disposisi;
+    public $disposisi_checkboxes = [];
+    public $disposisi_custom = '';
     public $sifat_surat;
     public $keterangan;
     public $bundle_id;
@@ -53,7 +54,15 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->tgl_keluar = $this->surat->tgl_keluar;
             $this->tgl_dikembalikan = $this->surat->tgl_dikembalikan;
             $this->distribusi = $this->surat->distribusi;
-            $this->disposisi = $this->surat->disposisi;
+            
+            $decodedDisposisi = json_decode($this->surat->disposisi, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedDisposisi)) {
+                $this->disposisi_checkboxes = $decodedDisposisi['checkboxes'] ?? [];
+                $this->disposisi_custom = $decodedDisposisi['custom'] ?? '';
+            } else {
+                $this->disposisi_custom = $this->surat->disposisi;
+            }
+
             $this->sifat_surat = $this->surat->sifat_surat;
             $this->keterangan = $this->surat->keterangan;
             $this->bundle_id = $this->surat->bundle_id;
@@ -117,7 +126,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'tgl_keluar' => $this->tgl_keluar,
             'tgl_dikembalikan' => $this->tgl_dikembalikan,
             'distribusi' => $this->distribusi,
-            'disposisi' => $this->disposisi,
+            'disposisi' => json_encode([
+                'checkboxes' => $this->disposisi_checkboxes,
+                'custom' => $this->disposisi_custom
+            ]),
             'sifat_surat' => $this->sifat_surat,
             'keterangan' => $this->keterangan,
             'bundle_id' => $this->bundle_id,
@@ -328,7 +340,36 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
                     <div style="margin-bottom: 12px;">
                         <label class="form-label" style="font-size: 0.85rem;">Isi Disposisi / Arahan</label>
-                        <textarea wire:model="disposisi" class="form-input" style="width: 100%; min-height: 80px;"></textarea>
+                        <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sub Bag Tata Usaha" style="margin-top: 3px;">
+                                <span>1. Ka. Sub Bag Tata Usaha.</span>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sie Perencanaan" style="margin-top: 3px;">
+                                <span>2. Ka. Sie Perencanaan.</span>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sie Pemeliharaan Drainase" style="margin-top: 3px;">
+                                <span>3. Ka. Sie Pemeliharaan Drainase.</span>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sie Pembangunan dan Peningkatan Drainase" style="margin-top: 3px;">
+                                <span>4. Ka. Sie Pembangunan dan Peningkatan Drainase.</span>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah" style="margin-top: 3px;">
+                                <span>5. Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah.</span>
+                            </label>
+                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Cilincing" style="margin-top: 3px;">
+                                <span>6. Satuan Pelaksana SDA Kecamatan Cilincing.</span>
+                            </label>
+                            <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; margin-top: 4px;">
+                                <span style="margin-top: 8px;">7.</span>
+                                <textarea wire:model="disposisi_custom" class="form-input" placeholder="........................ (Tambahkan teks arahan khusus di sini)" style="width: 100%; min-height: 60px; padding: 8px;"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 12px;">
