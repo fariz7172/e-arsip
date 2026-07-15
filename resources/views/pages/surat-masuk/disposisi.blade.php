@@ -81,7 +81,10 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
     </style>
 
     <div class="disposisi-container">
-        <div class="text-center font-bold title">LEMBAR DISPOSISI / CATATAN</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 20px;">
+            <img src="{{ asset('assets/logo.png') }}" alt="Logo" style="width: 60px; height: auto;">
+            <div class="font-bold title" style="margin-bottom: 0;">LEMBAR DISPOSISI / CATATAN</div>
+        </div>
         
         <table class="row-table">
             <tr>
