@@ -64,6 +64,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->no_urut = $maxNo ? $maxNo + 1 : 1;
             $this->tanggal = date('Y-m-d');
             $this->sifat_surat = 'Biasa';
+            $this->bundle_id = 1;
         }
     }
 
@@ -147,18 +148,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $bundleQuery = Bundle::orderBy('created_at', 'desc');
-        
-        if (!empty($this->searchBundle)) {
-            $bundleQuery->where(function($q) {
-                $q->where('nama', 'like', '%' . $this->searchBundle . '%')
-                  ->orWhere('kode', 'like', '%' . $this->searchBundle . '%')
-                  ->orWhere('tahun', 'like', '%' . $this->searchBundle . '%');
-            });
-        }
-        
         return [
-            'bundles' => $bundleQuery->limit(50)->get()
+            'bundles' => Bundle::where('id', 1)->get()
         ];
     }
 }; ?>
@@ -297,11 +288,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                 </span>
                                 <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px; color: var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                             </div>
-                            
                             <div x-show="open" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50;">
-                                <div style="padding: 8px; border-bottom: 1px solid var(--border-color);">
-                                    <input type="text" wire:model.live.debounce.300ms="searchBundle" placeholder="Ketik nama atau kode bundle..." style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; outline: none; font-size: 0.85rem;">
-                                </div>
                                 
                                 <div style="max-height: 200px; overflow-y: auto;">
                                     <div wire:click="$set('bundle_id', null); open = false" 
