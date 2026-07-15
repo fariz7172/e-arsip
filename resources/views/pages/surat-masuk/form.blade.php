@@ -362,8 +362,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                 <span>5. Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah.</span>
                             </label>
                             <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
-                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Cilincing" style="margin-top: 3px;">
-                                <span>6. Satuan Pelaksana SDA Kecamatan Cilincing.</span>
+                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan" style="margin-top: 3px;">
+                                <span>6. Satuan Pelaksana SDA Kecamatan.</span>
                             </label>
                             <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; margin-top: 4px;">
                                 <span style="margin-top: 8px;">7.</span>

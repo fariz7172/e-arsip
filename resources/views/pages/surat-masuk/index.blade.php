@@ -153,6 +153,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </td>
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 6px; justify-content: center;">
+                                        <a href="/surat-masuk/{{ $surat->id }}/disposisi" target="_blank" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: #0284c7;" title="Cetak Disposisi">
+                                            🖨️
+                                        </a>
                                         <a href="/surat-masuk/{{ $surat->id }}/edit" class="btn btn-sm btn-secondary" style="padding: 4px 8px;" title="Edit">
                                             ✏️
                                         </a>

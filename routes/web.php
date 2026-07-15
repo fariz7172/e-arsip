@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
     Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
     Volt::route('/surat-masuk/{id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
+    Volt::route('/surat-masuk/{id}/disposisi', 'surat-masuk.disposisi')->name('surat-masuk.disposisi');
 
     // Buku Agenda - Surat Keluar
     Volt::route('/surat-keluar', 'surat-keluar.index')->name('surat-keluar.index');
