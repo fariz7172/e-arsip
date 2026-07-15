@@ -68,15 +68,32 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             ->with(['dokumens.fileAttachments', 'dokumens.uploader'])
             ->orderBy('urutan');
 
+        $suratMasuksQuery = $this->bundle->suratMasuks();
+        $suratKeluarsQuery = $this->bundle->suratKeluars();
+
         if (!empty($this->searchKategori)) {
             $kategorisQuery->where(function($q) {
                 $q->where('nama', 'like', '%' . $this->searchKategori . '%')
                   ->orWhere('kode', 'like', '%' . $this->searchKategori . '%');
             });
+
+            $suratMasuksQuery->where(function($q) {
+                $q->where('perihal', 'like', '%' . $this->searchKategori . '%')
+                  ->orWhere('no_surat', 'like', '%' . $this->searchKategori . '%')
+                  ->orWhere('asal_surat', 'like', '%' . $this->searchKategori . '%');
+            });
+
+            $suratKeluarsQuery->where(function($q) {
+                $q->where('perihal', 'like', '%' . $this->searchKategori . '%')
+                  ->orWhere('no_surat', 'like', '%' . $this->searchKategori . '%')
+                  ->orWhere('tujuan_surat', 'like', '%' . $this->searchKategori . '%');
+            });
         }
 
         return [
-            'filteredKategoris' => $kategorisQuery->get()
+            'filteredKategoris' => $kategorisQuery->get(),
+            'filteredSuratMasuk' => $suratMasuksQuery->get(),
+            'filteredSuratKeluar' => $suratKeluarsQuery->get(),
         ];
     }
 }; ?>
@@ -385,7 +402,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     @endif
 
     <!-- Surat Masuk Section -->
-    @if($bundle->suratMasuks && $bundle->suratMasuks->count() > 0)
+    @if($filteredSuratMasuk && $filteredSuratMasuk->count() > 0)
         <div class="kategori-section" style="margin-top: 24px;">
             <details open>
                 <summary class="kategori-header" style="list-style: none; background: #f0f9ff; border: 1px solid #bae6fd;">
@@ -396,13 +413,13 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="badge" style="background: #bae6fd; color: #0369a1;">{{ $bundle->suratMasuks->count() }} surat</span>
+                        <span class="badge" style="background: #bae6fd; color: #0369a1;">{{ $filteredSuratMasuk->count() }} surat</span>
                         <span style="color: var(--text-muted); font-size: 0.9rem;">▾</span>
                     </div>
                 </summary>
 
                 <div class="dokumen-grid">
-                    @foreach($bundle->suratMasuks as $surat)
+                    @foreach($filteredSuratMasuk as $surat)
                         <div class="dokumen-card">
                             <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-masuk/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
@@ -425,7 +442,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     @endif
 
     <!-- Surat Keluar Section -->
-    @if($bundle->suratKeluars && $bundle->suratKeluars->count() > 0)
+    @if($filteredSuratKeluar && $filteredSuratKeluar->count() > 0)
         <div class="kategori-section" style="margin-top: 24px;">
             <details open>
                 <summary class="kategori-header" style="list-style: none; background: #fdf4ff; border: 1px solid #fbcfe8;">
@@ -436,13 +453,13 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="badge" style="background: #fbcfe8; color: #a21caf;">{{ $bundle->suratKeluars->count() }} surat</span>
+                        <span class="badge" style="background: #fbcfe8; color: #a21caf;">{{ $filteredSuratKeluar->count() }} surat</span>
                         <span style="color: var(--text-muted); font-size: 0.9rem;">▾</span>
                     </div>
                 </summary>
 
                 <div class="dokumen-grid">
-                    @foreach($bundle->suratKeluars as $surat)
+                    @foreach($filteredSuratKeluar as $surat)
                         <div class="dokumen-card">
                             <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-keluar/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
