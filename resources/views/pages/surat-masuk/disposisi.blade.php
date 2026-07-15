@@ -207,7 +207,7 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
                 <tr>
                     <td style="width: 80px;">Kepada</td>
                     <td style="width: 10px;">:</td>
-                    <td style="border-bottom: 1px dotted #000;"></td>
+                    <td style="border-bottom: 1px dotted #000;">{{ $surat->keterangan ?? '' }}</td>
                 </tr>
             </table>
             <div>*Coret yang tidak perlu</div>
