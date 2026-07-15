@@ -1,10 +1,13 @@
 <?php
 
 use Livewire\Volt\Component;
+use Livewire\WithPagination;
 use App\Models\Bundle;
 use Livewire\Attributes\Url;
 
 new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
+    use WithPagination;
+
     public Bundle $bundle;
 
     #[Url]
@@ -92,8 +95,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
         return [
             'filteredKategoris' => $kategorisQuery->get(),
-            'filteredSuratMasuk' => $suratMasuksQuery->get(),
-            'filteredSuratKeluar' => $suratKeluarsQuery->get(),
+            'filteredSuratMasuk' => $suratMasuksQuery->paginate(12, ['*'], 'smPage'),
+            'filteredSuratKeluar' => $suratKeluarsQuery->paginate(12, ['*'], 'skPage'),
         ];
     }
 }; ?>
@@ -437,6 +440,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         </div>
                     @endforeach
                 </div>
+                @if($filteredSuratMasuk->hasPages())
+                    <div style="margin-top: 16px;">
+                        {{ $filteredSuratMasuk->links(data: ['scrollTo' => false]) }}
+                    </div>
+                @endif
             </details>
         </div>
     @endif
@@ -477,6 +485,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         </div>
                     @endforeach
                 </div>
+                @if($filteredSuratKeluar->hasPages())
+                    <div style="margin-top: 16px;">
+                        {{ $filteredSuratKeluar->links(data: ['scrollTo' => false]) }}
+                    </div>
+                @endif
             </details>
         </div>
     @endif
