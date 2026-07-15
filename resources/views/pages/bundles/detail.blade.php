@@ -403,7 +403,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div class="dokumen-grid">
                     @foreach($bundle->suratMasuks as $surat)
                         <div class="dokumen-card">
-                            <a href="/surat-masuk/{{ $surat->id }}/edit" style="text-decoration: none; color: inherit; display: block;">
+                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-masuk/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
                                 <div class="dokumen-card-meta">
                                     <span>📋 {{ $surat->no_surat ?? '-' }}</span>
@@ -443,7 +443,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div class="dokumen-grid">
                     @foreach($bundle->suratKeluars as $surat)
                         <div class="dokumen-card">
-                            <a href="/surat-keluar/{{ $surat->id }}/edit" style="text-decoration: none; color: inherit; display: block;">
+                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-keluar/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
                                 <div class="dokumen-card-meta">
                                     <span>📋 {{ $surat->no_surat ?? '-' }}</span>

@@ -105,24 +105,89 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'bundle_id' => $this->bundle_id,
         ];
 
-        $allFiles = $this->existing_scans;
+        $suratModel = null;
+        if ($this->surat) {
+            $this->surat->update($data);
+            $suratModel = $this->surat;
+            $message = 'Data Surat Keluar berhasil diperbarui.';
+        } else {
+            $suratModel = SuratKeluar::create($data);
+            $message = 'Surat Keluar baru berhasil ditambahkan.';
+        }
 
-        if (!empty($this->scan_files)) {
-            foreach ($this->scan_files as $file) {
-                $path = $file->store('surat_keluar', 'public');
-                $allFiles[] = $path;
+        $allFiles = $this->existing_scans ?? [];
+
+        // --- Logika Integrasi Dokumen & FileAttachment ---
+        if ($this->bundle_id) {
+            $kategori = \App\Models\Kategori::firstOrCreate([
+                'bundle_id' => $this->bundle_id,
+                'nama' => 'Surat Keluar'
+            ], [
+                'kode' => 'SK',
+                'urutan' => 99
+            ]);
+
+            $dokumen = null;
+            if ($suratModel->dokumen_id) {
+                $dokumen = \App\Models\Dokumen::find($suratModel->dokumen_id);
+            }
+
+            if (!$dokumen) {
+                $dokumen = \App\Models\Dokumen::create([
+                    'kategori_id' => $kategori->id,
+                    'judul' => 'Surat Keluar: ' . ($this->perihal ?? $this->no_surat ?? '-'),
+                    'tanggal_dokumen' => $this->tanggal,
+                    'nomor_dokumen' => $this->no_surat,
+                    'keterangan' => $this->keterangan,
+                    'uploaded_by' => auth()->id()
+                ]);
+                $suratModel->update(['dokumen_id' => $dokumen->id]);
+            } else {
+                $dokumen->update([
+                    'kategori_id' => $kategori->id,
+                    'judul' => 'Surat Keluar: ' . ($this->perihal ?? $this->no_surat ?? '-'),
+                    'tanggal_dokumen' => $this->tanggal,
+                    'nomor_dokumen' => $this->no_surat,
+                    'keterangan' => $this->keterangan,
+                ]);
+            }
+
+            if (!empty($this->scan_files)) {
+                foreach ($this->scan_files as $file) {
+                    $path = $file->store('dokumen_files', 'public');
+                    $mime = $file->getMimeType();
+                    if ($mime === 'application/octet-stream') {
+                        $ext = strtolower($file->getClientOriginalExtension());
+                        $mime = match($ext) {
+                            'pdf' => 'application/pdf',
+                            'jpg', 'jpeg' => 'image/jpeg',
+                            'png' => 'image/png',
+                            'gif' => 'image/gif',
+                            'webp' => 'image/webp',
+                            default => 'application/octet-stream'
+                        };
+                    }
+                    \App\Models\FileAttachment::create([
+                        'dokumen_id' => $dokumen->id,
+                        'nama_file' => $file->getClientOriginalName(),
+                        'path' => $path,
+                        'disk' => 'public',
+                        'mime_type' => $mime,
+                        'ukuran' => $file->getSize()
+                    ]);
+                    $allFiles[] = $path;
+                }
+            }
+        } else {
+            if (!empty($this->scan_files)) {
+                foreach ($this->scan_files as $file) {
+                    $path = $file->store('surat_keluar', 'public');
+                    $allFiles[] = $path;
+                }
             }
         }
         
-        $data['scan_file'] = empty($allFiles) ? null : $allFiles;
-
-        if ($this->surat) {
-            $this->surat->update($data);
-            $message = 'Data Surat Keluar berhasil diperbarui.';
-        } else {
-            SuratKeluar::create($data);
-            $message = 'Surat Keluar baru berhasil ditambahkan.';
-        }
+        $suratModel->update(['scan_file' => empty($allFiles) ? null : $allFiles]);
 
         session()->flash('success', $message);
         $this->redirect('/surat-keluar', navigate: true);

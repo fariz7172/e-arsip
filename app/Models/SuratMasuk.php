@@ -19,4 +19,9 @@ class SuratMasuk extends Model
     {
         return $this->belongsTo(Bundle::class);
     }
+
+    public function dokumen()
+    {
+        return $this->belongsTo(Dokumen::class, 'dokumen_id');
+    }
 }
