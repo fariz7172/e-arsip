@@ -150,7 +150,7 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
         <div class="box-container">
             <div class="box-left">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Instruksi / Informasi</div>
-                <div style="min-height: 200px; white-space: pre-wrap;">{{ $customText }}</div>
+                <div style="min-height: 200px; white-space: pre-wrap;">{{ $surat->perihal ?? '' }}</div>
             </div>
             <div class="box-right">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Diteruskan / Kepada</div>
@@ -187,8 +187,14 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
                 </div>
                 <div class="check-item">
                     <span>7.</span>
-                    <span class="check-box"></span>
-                    <span class="dotted-line" style="margin-top: 15px;"></span>
+                    <span class="check-box">{{ $customText ? '✓' : '' }}</span>
+                    <span>
+                        @if($customText)
+                            {{ $customText }}
+                        @else
+                            <span class="dotted-line" style="margin-top: 15px;"></span>
+                        @endif
+                    </span>
                 </div>
             </div>
         </div>
