@@ -383,7 +383,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                     </div>
 
                                     <!-- Modal Detail Dokumen -->
-                                    <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;" x-transition>
+                                    <template x-teleport="body">
+                                        <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px;" x-transition>
                                         <div @click.away="showModal = false" class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 overflow-hidden flex flex-col" style="background: white; border-radius: 16px; max-width: 800px; width: 100%; max-height: 90vh; display: flex; flex-direction: column;">
                                             
                                             <!-- Modal Header -->
@@ -494,7 +495,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                        </div>
+                                    </template>
                                 </div>
                             @endforeach
                         </div>
