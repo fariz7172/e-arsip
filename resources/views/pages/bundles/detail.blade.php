@@ -369,7 +369,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                         
                                         <!-- Action Buttons -->
                                         <div style="display: flex; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
-                                            <button @click="showModal = true" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; justify-content: center; padding: 6px;">Detail & File ({{ $dokumen->fileAttachments->count() }})</button>
+                                            <a href="/dokumen/{{ $dokumen->id }}" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; justify-content: center; padding: 6px;">Halaman Detail</a>
+                                            <button @click="showModal = true" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; justify-content: center; padding: 6px;">Info & File ({{ $dokumen->fileAttachments->count() }})</button>
                                         </div>
                                     
                                         @if(auth()->user()->isAdmin())
