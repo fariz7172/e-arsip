@@ -12,6 +12,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public ?SuratMasuk $surat = null;
 
     public $no_urut;
+    public $kode;
     public $tanggal;
     public $no_surat;
     public $perihal;
@@ -43,6 +44,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         if ($id) {
             $this->surat = SuratMasuk::findOrFail($id);
             $this->no_urut = $this->surat->no_urut;
+            $this->kode = $this->surat->kode;
             $this->tanggal = $this->surat->tanggal;
             $this->no_surat = $this->surat->no_surat;
             $this->perihal = $this->surat->perihal;
@@ -95,6 +97,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     {
         $this->validate([
             'no_urut' => 'nullable|integer',
+            'kode' => 'nullable|string|max:255',
             'tanggal' => 'nullable|date',
             'no_surat' => 'nullable|string|max:255',
             'perihal' => 'required|string|max:500',
@@ -116,6 +119,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
         $data = [
             'no_urut' => $this->no_urut,
+            'kode' => $this->kode,
             'tanggal' => $this->tanggal,
             'no_surat' => $this->no_surat,
             'perihal' => $this->perihal,
@@ -142,6 +146,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $suratModel = $this->surat;
             $message = 'Data Surat Masuk berhasil diperbarui.';
         } else {
+            if (empty($data['no_urut'])) {
+                $lastSurat = SuratMasuk::orderByRaw('CAST(no_urut AS UNSIGNED) DESC')->first();
+                $data['no_urut'] = $lastSurat ? intval($lastSurat->no_urut) + 1 : 1;
+            }
             $suratModel = SuratMasuk::create($data);
             $message = 'Surat Masuk baru berhasil ditambahkan.';
         }
@@ -322,6 +330,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             <div style="display: flex; flex-direction: column; gap: 16px;">
                 <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">Tracking & Disposisi</h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px;">
+                        <input type="hidden" wire:model="no_urut">
+                        <div>
+                            <label class="form-label" style="font-size: 0.85rem;">Kode</label>
+                            <input type="text" wire:model="kode" class="form-input" style="width: 100%;">
+                        </div>
+                    </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                         <div>

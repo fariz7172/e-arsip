@@ -78,6 +78,20 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
             margin-top: 20px;
             font-style: italic;
         }
+        
+        /* Edit mode for print view */
+        [contenteditable]:hover {
+            background: rgba(255, 255, 0, 0.2);
+            outline: 1px dashed #cbd5e1;
+            cursor: text;
+        }
+        [contenteditable]:focus {
+            background: rgba(255, 255, 0, 0.3);
+            outline: 1px solid #3b82f6;
+        }
+        @media print {
+            [contenteditable] { outline: none !important; background: transparent !important; }
+        }
     </style>
 
     <div class="disposisi-container">
@@ -86,17 +100,17 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
             <div class="font-bold title" style="margin-bottom: 0;">LEMBAR DISPOSISI / CATATAN</div>
         </div>
         
-        <table class="row-table">
+        <table class="row-table" style="table-layout: fixed;">
             <tr>
                 <td style="width:80px;">Index</td>
                 <td style="width:10px;">:</td>
-                <td><span class="font-bold">{{ $surat->no_urut ?? '.................' }}</span></td>
+                <td><span class="font-bold" contenteditable="plaintext-only">{{ $surat->no_urut ?? '.................' }}</span></td>
                 <td style="width:120px;">Tanggal Masuk</td>
                 <td style="width:10px;">:</td>
-                <td>{{ $surat->tgl_masuk ? \Carbon\Carbon::parse($surat->tgl_masuk)->format('d/m/Y') : '.................' }}</td>
+                <td contenteditable="plaintext-only">{{ $surat->tgl_masuk ? \Carbon\Carbon::parse($surat->tgl_masuk)->format('d/m/Y') : '.................' }}</td>
                 <td style="width:50px;">Kode</td>
                 <td style="width:10px;">:</td>
-                <td>.................</td>
+                <td contenteditable="plaintext-only">{{ $surat->kode ?? '.................' }}</td>
             </tr>
         </table>
 
@@ -104,19 +118,19 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
             <tr>
                 <td class="col-label">Perihal ringkas</td>
                 <td class="col-colon">:</td>
-                <td style="border-bottom: 1px dotted #000;">{{ $surat->perihal ?? '' }}</td>
+                <td style="border-bottom: 1px dotted #000;" contenteditable="plaintext-only">{{ $surat->perihal ?? '' }}</td>
             </tr>
             <tr>
                 <td class="col-label">Tgl. / No Surat</td>
                 <td class="col-colon">:</td>
                 <td style="border-bottom: 1px dotted #000;">
-                    {{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d/m/Y') : '........' }} / {{ $surat->no_surat ?? '........' }}
+                    <span contenteditable="plaintext-only">{{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d/m/Y') : '........' }}</span> / <span contenteditable="plaintext-only">{{ $surat->no_surat ?? '........' }}</span>
                 </td>
             </tr>
             <tr>
                 <td class="col-label">Asal</td>
                 <td class="col-colon">:</td>
-                <td style="border-bottom: 1px dotted #000;">{{ $surat->asal_surat ?? '' }}</td>
+                <td style="border-bottom: 1px dotted #000;" contenteditable="plaintext-only">{{ $surat->asal_surat ?? '' }}</td>
             </tr>
         </table>
 
@@ -150,7 +164,7 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
         <div class="box-container">
             <div class="box-left">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Instruksi / Informasi</div>
-                <div style="min-height: 200px; white-space: pre-wrap;">{{ $surat->distribusi ?? '' }}</div>
+                <div style="min-height: 200px; white-space: pre-wrap;" contenteditable="plaintext-only">{{ $surat->distribusi ?? '' }}</div>
             </div>
             <div class="box-right">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Diteruskan / Kepada</div>
