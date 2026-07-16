@@ -408,62 +408,112 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                             <div class="flex-1 overflow-y-auto p-8 custom-scrollbar" style="padding: 32px; overflow-y: auto; flex: 1;">
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
                                                     
-                                                    <!-- Section I: Data Dokumen -->
+                                                    @php $payment = $bundle->payments->first(); @endphp
+                                                    @if($payment)
+                                                    <!-- Section I: Anggaran -->
                                                     <div class="space-y-4" style="display: flex; flex-direction: column; gap: 16px;">
                                                         <div class="flex items-center gap-2 text-primary" style="display: flex; align-items: center; gap: 8px; color: var(--accent);">
                                                             <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">I. Data Dokumen</h4>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">I. Data Anggaran</h4>
                                                         </div>
                                                         <div class="bg-slate-50 rounded-2xl p-5 space-y-3 border border-slate-100" style="background: #f8fafc; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #f1f5f9;">
-                                                            <div class="flex flex-col gap-1">
-                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Judul Dokumen</span>
-                                                                <span class="text-sm font-bold text-slate-800" style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">{{ $dokumen->judul }}</span>
-                                                            </div>
                                                             <div class="flex justify-between border-b border-slate-200/50 pb-2" style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Nomor Dokumen</span>
-                                                                <span class="text-xs font-black text-slate-700" style="font-size: 0.75rem; font-weight: 900; color: #334155;">{{ $dokumen->nomor_dokumen ?? '-' }}</span>
+                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">No. SPD</span>
+                                                                <span class="text-xs font-black text-slate-700" style="font-size: 0.75rem; font-weight: 900; color: #334155;">{{ $payment->no_spd ?: '-' }}</span>
                                                             </div>
-                                                            <div class="flex justify-between">
-                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Tanggal Dokumen</span>
-                                                                <span class="text-xs font-black text-slate-700" style="font-size: 0.75rem; font-weight: 900; color: #334155;">{{ $dokumen->tanggal_dokumen ? $dokumen->tanggal_dokumen->format('d M Y') : '-' }}</span>
+                                                            <div class="flex flex-col gap-1">
+                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Program</span>
+                                                                <span class="text-sm font-bold text-slate-800" style="font-size: 0.95rem; font-weight: 700; color: #1e293b;">{{ $payment->program ?: '-' }}</span>
+                                                            </div>
+                                                            <div class="flex flex-col gap-1">
+                                                                <span class="text-xs text-slate-400 font-bold" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700;">Kegiatan</span>
+                                                                <span class="text-xs text-slate-600 leading-relaxed" style="font-size: 0.75rem; color: #475569;">{{ $payment->kegiatan ?: '-' }}</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <!-- Section II: Informasi Sistem -->
+                                                    <!-- Section II: Kontrak -->
                                                     <div class="space-y-4" style="display: flex; flex-direction: column; gap: 16px;">
                                                         <div class="flex items-center gap-2 text-emerald-500" style="display: flex; align-items: center; gap: 8px; color: #10b981;">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">II. Informasi Sistem</h4>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">II. Kontrak & Nilai</h4>
                                                         </div>
                                                         <div class="bg-emerald-50/30 rounded-2xl p-5 space-y-3 border border-emerald-100/50" style="background: rgba(236, 253, 245, 0.3); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(209, 250, 229, 0.5);">
                                                             <div class="flex justify-between border-b border-emerald-200/30 pb-2" style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(167, 243, 208, 0.3); padding-bottom: 8px;">
-                                                                <span class="text-xs text-emerald-600/70 font-bold" style="font-size: 0.75rem; color: rgba(5, 150, 105, 0.7); font-weight: 700;">Diupload Oleh</span>
-                                                                <span class="text-xs font-black text-emerald-700" style="font-size: 0.75rem; font-weight: 900; color: #047857;">{{ $dokumen->uploader?->name ?? '-' }}</span>
+                                                                <span class="text-xs text-emerald-600/70 font-bold" style="font-size: 0.75rem; color: rgba(5, 150, 105, 0.7); font-weight: 700;">No. Kontrak</span>
+                                                                <span class="text-xs font-black text-emerald-700" style="font-size: 0.75rem; font-weight: 900; color: #047857;">{{ optional($payment->contract)->nomor_kontrak ?: '-' }}</span>
                                                             </div>
                                                             <div class="flex justify-between">
-                                                                <span class="text-xs text-emerald-600/70 font-bold" style="font-size: 0.75rem; color: rgba(5, 150, 105, 0.7); font-weight: 700;">Waktu Upload</span>
-                                                                <span class="text-xs font-black text-emerald-600" style="font-size: 0.75rem; font-weight: 900; color: #059669;">{{ $dokumen->created_at ? $dokumen->created_at->format('d M Y H:i') : '-' }}</span>
+                                                                <span class="text-xs text-emerald-600/70 font-bold" style="font-size: 0.75rem; color: rgba(5, 150, 105, 0.7); font-weight: 700;">Nilai Kontrak</span>
+                                                                <span class="text-sm font-black text-emerald-600" style="font-size: 0.95rem; font-weight: 900; color: #059669;">Rp {{ number_format($payment->jumlah, 0, ',', '.') }}</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <!-- Section III: Keterangan Tambahan -->
+                                                    <!-- Section III: Uraian Keperluan -->
                                                     <div class="space-y-4 md:col-span-2" style="display: flex; flex-direction: column; gap: 16px; grid-column: 1 / -1;">
                                                         <div class="flex items-center gap-2 text-blue-500" style="display: flex; align-items: center; gap: 8px; color: #3b82f6;">
                                                             <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">III. Keterangan Tambahan</h4>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">III. Uraian Pembayaran</h4>
                                                         </div>
                                                         <div class="bg-blue-50/30 rounded-2xl p-5 border border-blue-100/50" style="background: rgba(239, 246, 255, 0.3); border-radius: 16px; padding: 20px; border: 1px solid rgba(219, 234, 254, 0.5);">
-                                                            <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line" style="font-size: 0.85rem; color: #334155; line-height: 1.6; white-space: pre-line; margin: 0;">{{ $dokumen->keterangan ?: 'Tidak ada keterangan' }}</p>
+                                                            <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line" style="font-size: 0.85rem; color: #334155; line-height: 1.6; white-space: pre-line; margin: 0;">{{ $payment->keperluan ?: '-' }}</p>
                                                         </div>
                                                     </div>
 
-                                                    <!-- Section IV: Dokumen File -->
+                                                    <!-- Section IV: Dokumen Pembayaran -->
+                                                    <div class="space-y-4 md:col-span-2" style="display: flex; flex-direction: column; gap: 16px; grid-column: 1 / -1;">
+                                                        <div class="flex items-center gap-2 text-indigo-500" style="display: flex; align-items: center; gap: 8px; color: #6366f1;">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">IV. Dokumen Pembayaran</h4>
+                                                        </div>
+                                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px;">
+                                                            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm" style="background: white; border: 1px solid #f1f5f9; padding: 16px; border-radius: 16px;">
+                                                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1" style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">No. SPM</p>
+                                                                <p class="text-xs font-black text-slate-700" style="font-size: 0.8rem; font-weight: 900; color: #334155;">{{ $payment->no_spm ?: '-' }}</p>
+                                                            </div>
+                                                            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm" style="background: white; border: 1px solid #f1f5f9; padding: 16px; border-radius: 16px;">
+                                                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1" style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">No. SPP</p>
+                                                                <p class="text-xs font-black text-slate-700" style="font-size: 0.8rem; font-weight: 900; color: #334155;">{{ $payment->no_spp ?: '-' }}</p>
+                                                            </div>
+                                                            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm" style="background: white; border: 1px solid #f1f5f9; padding: 16px; border-radius: 16px;">
+                                                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1" style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">No. KWI</p>
+                                                                <p class="text-xs font-black text-slate-700" style="font-size: 0.8rem; font-weight: 900; color: #334155;">{{ $payment->no_kwi ?: '-' }}</p>
+                                                            </div>
+                                                            <div class="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm" style="background: white; border: 1px solid #f1f5f9; padding: 16px; border-radius: 16px;">
+                                                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-1" style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">No. SP2D</p>
+                                                                <p class="text-xs font-black text-slate-700" style="font-size: 0.8rem; font-weight: 900; color: #334155;">{{ $payment->no_sp2d ?: '-' }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Section V: Vendor -->
+                                                    <div class="space-y-4 md:col-span-2" style="display: flex; flex-direction: column; gap: 16px; grid-column: 1 / -1;">
+                                                        <div class="flex items-center gap-2 text-purple-500" style="display: flex; align-items: center; gap: 8px; color: #a855f7;">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">V. Informasi Vendor</h4>
+                                                        </div>
+                                                        <div class="bg-purple-50/30 rounded-2xl p-5 border border-purple-100/50" style="background: rgba(250, 245, 255, 0.3); border-radius: 16px; padding: 20px; border: 1px solid rgba(233, 213, 255, 0.5);">
+                                                            <div class="flex flex-col gap-1">
+                                                                <span class="text-xs text-purple-400 font-bold" style="font-size: 0.75rem; color: #c084fc; font-weight: 700;">Perusahaan / Vendor</span>
+                                                                <span class="text-lg font-black text-purple-900" style="font-size: 1.1rem; font-weight: 900; color: #581c87;">{{ optional($payment->vendor)->nama_perusahaan ?: '-' }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @else
+                                                    <!-- Optional Data Dokumen when no payment linked -->
+                                                    <div class="space-y-4 md:col-span-2" style="display: flex; flex-direction: column; gap: 16px; grid-column: 1 / -1;">
+                                                        <div class="bg-slate-50 rounded-2xl p-5 space-y-3 border border-slate-100" style="background: #f8fafc; border-radius: 16px; padding: 20px; border: 1px solid #f1f5f9;">
+                                                            <p class="text-xs text-slate-400 text-center">Data pembayaran tidak tersedia untuk bundle ini.</p>
+                                                        </div>
+                                                    </div>
+                                                    @endif
+
+                                                    <!-- Section VI: Dokumen File -->
                                                     <div class="space-y-4 md:col-span-2" style="display: flex; flex-direction: column; gap: 16px; grid-column: 1 / -1;">
                                                         <div class="flex items-center gap-2 text-amber-500" style="display: flex; align-items: center; gap: 8px; color: #f59e0b;">
                                                             <svg xmlns="http://www.w3.org/2000/svg" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">IV. File Lampiran</h4>
+                                                            <h4 class="font-black text-sm uppercase tracking-wider" style="margin: 0; font-size: 0.875rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">VI. File Lampiran</h4>
                                                         </div>
                                                         
                                                         @if($dokumen->fileAttachments->count() > 0)
