@@ -150,7 +150,7 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
         <div class="box-container">
             <div class="box-left">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Instruksi / Informasi</div>
-                <div style="min-height: 200px; white-space: pre-wrap;">{{ $surat->perihal ?? '' }}</div>
+                <div style="min-height: 200px; white-space: pre-wrap;">{{ $surat->distribusi ?? '' }}</div>
             </div>
             <div class="box-right">
                 <div class="font-bold text-center" style="margin-bottom: 15px;">Diteruskan / Kepada</div>
