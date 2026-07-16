@@ -351,9 +351,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     @if($kategori->dokumens->count() > 0)
                         <div class="dokumen-grid">
                             @foreach($kategori->dokumens as $dokumen)
-                                <div class="dokumen-card">
+                                <div class="dokumen-card" x-data="{ showModal: false }">
                                     <div style="position:relative;">
-                                        <a href="/dokumen/{{ $dokumen->id }}" style="text-decoration: none; color: inherit; display: block;">
+                                        <div>
                                             <div class="dokumen-card-title" style="padding-right:30px;">{{ $dokumen->judul }}</div>
                                             <div class="dokumen-card-meta">
 
@@ -364,24 +364,78 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                                 <span>📅 {{ $dokumen->tanggal_dokumen->format('d M Y') }}</span>
                                             @endif
                                             <span>👤 {{ $dokumen->uploader?->name }}</span>
+                                            </div>
                                         </div>
-                                        <div class="file-mini-list">
-                                            @foreach($dokumen->fileAttachments as $file)
-                                                <span class="file-mini-chip {{ $file->is_pdf ? 'pdf' : ($file->is_image ? 'img' : '') }}">
-                                                    {{ $file->is_pdf ? '📄' : ($file->is_image ? '🖼️' : '📎') }}
-                                                    {{ Str::limit($file->nama_file, 18) }}
-                                                </span>
-                                            @endforeach
+                                        
+                                        <!-- Action Buttons -->
+                                        <div style="display: flex; gap: 8px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                            <a href="/dokumen/{{ $dokumen->id }}" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; justify-content: center; padding: 6px;">Detail</a>
+                                            <button @click="showModal = true" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; justify-content: center; padding: 6px;">File ({{ $dokumen->fileAttachments->count() }})</button>
                                         </div>
-                                    </a>
-                                    @if(auth()->user()->isAdmin())
-                                        <button wire:click.prevent="hapusDokumen({{ $dokumen->id }})" 
-                                                wire:confirm="Yakin ingin menghapus dokumen '{{ $dokumen->judul }}'?"
-                                                style="position:absolute; top:12px; right:12px; background:white; border:1px solid #fecaca; color:#ef4444; border-radius:6px; padding:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10; box-shadow:0 1px 2px rgba(0,0,0,0.05);"
-                                                title="Hapus Dokumen">
-                                            <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                        </button>
-                                    @endif
+                                    
+                                        @if(auth()->user()->isAdmin())
+                                            <button wire:click.prevent="hapusDokumen({{ $dokumen->id }})" 
+                                                    wire:confirm="Yakin ingin menghapus dokumen '{{ $dokumen->judul }}'?"
+                                                    style="position:absolute; top:0px; right:0px; background:white; border:1px solid #fecaca; color:#ef4444; border-radius:6px; padding:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10; box-shadow:0 1px 2px rgba(0,0,0,0.05);"
+                                                    title="Hapus Dokumen">
+                                                <svg xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                            </button>
+                                        @endif
+                                    </div>
+
+                                    <!-- Modal File Detail -->
+                                    <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;" x-transition>
+                                        <div @click.away="showModal = false" class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden" style="background: white; border-radius: 12px; max-width: 600px; width: 100%; max-height: 90vh; display: flex; flex-direction: column;">
+                                            <!-- Modal Header -->
+                                            <div class="px-8 py-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between" style="padding: 16px 24px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+                                                <div class="flex items-center gap-4" style="display: flex; align-items: center; gap: 16px;">
+                                                    <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center" style="width: 48px; height: 48px; background: var(--accent-glow); color: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                                                    </div>
+                                                    <div>
+                                                        <h2 class="text-xl font-black text-slate-800" style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e293b;">Daftar File</h2>
+                                                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold" style="margin: 0; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $dokumen->judul }}</p>
+                                                    </div>
+                                                </div>
+                                                <button @click="showModal = false" class="p-2 hover:bg-rose-50 text-slate-400 hover:text-rose-500 rounded-xl transition-all" style="background: transparent; border: none; cursor: pointer; color: #94a3b8; padding: 8px;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Modal Body (Scrollable) -->
+                                            <div class="p-8 overflow-y-auto" style="padding: 24px; overflow-y: auto; flex: 1;">
+                                                @if($dokumen->fileAttachments->count() > 0)
+                                                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                                                        @foreach($dokumen->fileAttachments as $file)
+                                                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; flex-wrap: wrap; gap: 12px;">
+                                                                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+                                                                    <span style="font-size: 1.5rem; flex-shrink: 0;">
+                                                                        {{ $file->is_pdf ? '📄' : ($file->is_image ? '🖼️' : '📎') }}
+                                                                    </span>
+                                                                    <div style="overflow: hidden;">
+                                                                        <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $file->nama_file }}</div>
+                                                                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                                                            Diupload: {{ $file->created_at->format('d M Y H:i') }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                                                    @if($file->is_image || $file->is_pdf)
+                                                                        <a href="{{ route('file.preview', $file->id) }}" target="_blank" class="btn btn-sm btn-secondary" style="padding: 4px 12px;">Lihat</a>
+                                                                    @endif
+                                                                    <a href="{{ route('file.download', $file->id) }}" class="btn btn-sm btn-primary" style="padding: 4px 12px;">Unduh</a>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <div class="text-center py-8 text-slate-400" style="text-align: center; padding: 32px 0; color: #94a3b8;">
+                                                        Tidak ada file lampiran pada dokumen ini.
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
