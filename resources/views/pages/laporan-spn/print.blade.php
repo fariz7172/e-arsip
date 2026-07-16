@@ -228,10 +228,9 @@
                     { "no_berkas": "", "no_item": "29", "kode": " - ", "uraian": "Kwitansi", "tanggal": "{{ $payment->tgl_spm ?? '...' }}", "jumlah": "1", "keterangan": "Berkas" },
                     { "no_berkas": "", "no_item": "30", "kode": " - ", "uraian": "Faktur Pajak", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
                     { "no_berkas": "", "no_item": "31", "kode": " - ", "uraian": "NPWP ( Fotocopy )", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
-                    { "no_berkas": "", "no_item": "32", "kode": " - ", "uraian": "Laporan Pekerjaan Selesai", "tanggal": "{{ $payment->keperluan ?? '...' }}", "jumlah": "1", "keterangan": "Berkas" },
-                    { "no_berkas": "", "no_item": "33", "kode": " - ", "uraian": "Rekening Koran ", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
-                    { "no_berkas": "", "no_item": "34", "kode": " - ", "uraian": "Surat Pengantar Tagihan", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
-                    { "no_berkas": "", "no_item": "35", "kode": " - ", "uraian": "Company Profile", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
+                    { "no_berkas": "", "no_item": "32", "kode": " - ", "uraian": "Rekening Koran ", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
+                    { "no_berkas": "", "no_item": "33", "kode": " - ", "uraian": "Surat Pengantar Tagihan", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
+                    { "no_berkas": "", "no_item": "34", "kode": " - ", "uraian": "Company Profile", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
                   ],
                 
                 // Helper to collect all contenteditable data just before save

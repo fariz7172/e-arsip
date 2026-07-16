@@ -335,12 +335,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label class="form-label" style="font-size: 0.85rem;">Distribusi (Ke Seksi/Unit)</label>
+                        <label class="form-label" style="font-size: 0.85rem;">Isi Disposisi / Arahan</label>
                         <input type="text" wire:model="distribusi" class="form-input" style="width: 100%;">
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label class="form-label" style="font-size: 0.85rem;">Isi Disposisi / Arahan</label>
+                        <label class="form-label" style="font-size: 0.85rem;">Distribusi (Ke Seksi/Unit)</label>
                         <div style="background: white; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
                             <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
                                 <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sub Bag Tata Usaha" style="margin-top: 3px;">
