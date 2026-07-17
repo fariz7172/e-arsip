@@ -34,7 +34,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
     public function with(): array
     {
-        $query = SuratKeluar::orderBy('no_urut', 'desc');
+        $query = SuratKeluar::with('dokumen.fileAttachments')->orderBy('no_urut', 'desc');
 
         if (!empty($this->search)) {
             $query->where(function($q) {
@@ -117,8 +117,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                               
                                 <td style="text-align: center;">
                                     @if($surat->dokumen_id)
-                                        <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" title="Lihat Dokumen & Upload File" style="display:inline-block; padding: 4px 8px; background: #fef2f2; color: #ef4444; border-radius: 6px;">
-                                            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                                        @php
+                                            $attachCount = $surat->dokumen ? $surat->dokumen->fileAttachments->count() : 0;
+                                        @endphp
+                                        <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" title="Lihat Dokumen & Upload File" style="display:inline-flex; align-items:center; justify-content:center; gap: 4px; padding: 4px 10px; border-radius: 6px; text-decoration:none; font-weight:600; {{ $attachCount > 0 ? 'background: #d1fae5; color: #10b981;' : 'background: #fef2f2; color: #ef4444;' }}">
+                                            <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+                                            @if($attachCount > 0)
+                                                <span style="font-size: 0.75rem;">{{ $attachCount }}</span>
+                                            @endif
                                         </a>
                                     @else
                                         <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>

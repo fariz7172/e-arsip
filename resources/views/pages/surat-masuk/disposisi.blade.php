@@ -80,21 +80,45 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
         }
         
         /* Edit mode for print view */
+        [contenteditable] {
+            outline: none;
+        }
         [contenteditable]:hover {
             background: rgba(255, 255, 0, 0.2);
-            outline: 1px dashed #cbd5e1;
             cursor: text;
         }
         [contenteditable]:focus {
             background: rgba(255, 255, 0, 0.3);
-            outline: 1px solid #3b82f6;
+            outline: none;
         }
+        
         @media print {
-            [contenteditable] { outline: none !important; background: transparent !important; }
+            .no-print { display: none; }
+            [contenteditable]:hover, [contenteditable]:focus { background: transparent; outline: none; }
         }
     </style>
 
-    <div class="disposisi-container">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageId = 'disposisi_surat_{{ $surat->id ?? 0 }}';
+            const editables = document.querySelectorAll('[contenteditable]');
+            
+            // Load from localStorage
+            editables.forEach((el, index) => {
+                const saved = localStorage.getItem(pageId + '_field_' + index);
+                if (saved !== null) {
+                    el.innerText = saved;
+                }
+                
+                // Save to localStorage on input
+                el.addEventListener('input', function() {
+                    localStorage.setItem(pageId + '_field_' + index, el.innerText);
+                });
+            });
+        });
+    </script>
+
+    <div class="disposisi-container" style="page-break-after: always; position: relative;">
         <div style="position: relative; text-align: center; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; min-height: 70px;">
             <img src="{{ asset('assets/logo.png') }}" alt="Logo" style="position: absolute; left: 0; width: 60px; height: auto;">
             <div class="font-bold title" style="margin-bottom: 0;">LEMBAR DISPOSISI / CATATAN</div>
