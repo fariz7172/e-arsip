@@ -20,6 +20,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $tanggal_acara;
     public $waktu_acara;
     public $tempat_acara;
+    public $detail_acaras = [['tanggal' => '', 'waktu' => '', 'tempat' => '']];
     public $tgl_masuk;
     public $tgl_keluar;
     public $tgl_dikembalikan;
@@ -52,6 +53,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->tanggal_acara = $this->surat->tanggal_acara;
             $this->waktu_acara = $this->surat->waktu_acara;
             $this->tempat_acara = $this->surat->tempat_acara;
+            if (!empty($this->surat->detail_acaras)) {
+                $this->detail_acaras = is_array($this->surat->detail_acaras) ? $this->surat->detail_acaras : json_decode($this->surat->detail_acaras, true);
+            } else {
+                $this->detail_acaras = [['tanggal' => $this->tanggal_acara, 'waktu' => $this->waktu_acara, 'tempat' => $this->tempat_acara]];
+            }
             $this->tgl_masuk = $this->surat->tgl_masuk;
             $this->tgl_keluar = $this->surat->tgl_keluar;
             $this->tgl_dikembalikan = $this->surat->tgl_dikembalikan;
@@ -77,6 +83,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->sifat_surat = 'Biasa';
             $this->bundle_id = 1;
         }
+    }
+
+    public function addAcara()
+    {
+        $this->detail_acaras[] = ['tanggal' => '', 'waktu' => '', 'tempat' => ''];
+    }
+
+    public function removeAcara($index)
+    {
+        unset($this->detail_acaras[$index]);
+        $this->detail_acaras = array_values($this->detail_acaras);
     }
 
     public function deleteExistingFile($index)
@@ -105,6 +122,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'tanggal_acara' => 'nullable|date',
             'waktu_acara' => 'nullable|string|max:50',
             'tempat_acara' => 'nullable|string|max:255',
+            'detail_acaras' => 'nullable|array',
             'tgl_masuk' => 'nullable|date',
             'tgl_keluar' => 'nullable|date',
             'tgl_dikembalikan' => 'nullable|date',
@@ -124,9 +142,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'no_surat' => $this->no_surat,
             'perihal' => $this->perihal,
             'asal_surat' => $this->asal_surat,
-            'tanggal_acara' => $this->tanggal_acara,
-            'waktu_acara' => $this->waktu_acara,
-            'tempat_acara' => $this->tempat_acara,
+            'tanggal_acara' => count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['tanggal'] : $this->tanggal_acara,
+            'waktu_acara' => count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['waktu'] : $this->waktu_acara,
+            'tempat_acara' => count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['tempat'] : $this->tempat_acara,
+            'detail_acaras' => $this->detail_acaras,
             'tgl_masuk' => $this->tgl_masuk,
             'tgl_keluar' => $this->tgl_keluar,
             'tgl_dikembalikan' => $this->tgl_dikembalikan,
@@ -308,21 +327,36 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 </div>
 
                 <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
-                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">Detail Acara (Opsional)</h3>
-                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.85rem;">Tanggal Acara</label>
-                            <input type="date" wire:model="tanggal_acara" class="form-input" style="width: 100%;">
-                        </div>
-                        <div style="flex: 1;">
-                            <label class="form-label" style="font-size: 0.85rem;">Waktu Acara</label>
-                            <input type="text" wire:model="waktu_acara" class="form-input" style="width: 100%;" placeholder="09:00 - Selesai">
-                        </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">Detail Acara (Opsional)</h3>
+                        <button type="button" wire:click="addAcara" class="btn btn-sm btn-primary" style="padding: 4px 10px; font-size: 0.8rem;">
+                            + Tambah Acara
+                        </button>
                     </div>
-                    <div>
-                        <label class="form-label" style="font-size: 0.85rem;">Tempat Acara</label>
-                        <input type="text" wire:model="tempat_acara" class="form-input" style="width: 100%;">
-                    </div>
+                    
+                    @foreach($detail_acaras as $index => $acara)
+                        <div style="background: white; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; position: relative;">
+                            @if(count($detail_acaras) > 1)
+                                <button type="button" wire:click="removeAcara({{ $index }})" style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    &times;
+                                </button>
+                            @endif
+                            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.85rem;">Tanggal Acara</label>
+                                    <input type="date" wire:model="detail_acaras.{{ $index }}.tanggal" class="form-input" style="width: 100%;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label class="form-label" style="font-size: 0.85rem;">Waktu Acara</label>
+                                    <input type="text" wire:model="detail_acaras.{{ $index }}.waktu" class="form-input" style="width: 100%;" placeholder="09:00 - Selesai">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.85rem;">Tempat Acara</label>
+                                <input type="text" wire:model="detail_acaras.{{ $index }}.tempat" class="form-input" style="width: 100%;">
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
 
@@ -378,10 +412,33 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                 <input type="checkbox" wire:model="disposisi_checkboxes" value="Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah" style="margin-top: 3px;">
                                 <span>5. Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah.</span>
                             </label>
-                            <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
-                                <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan" style="margin-top: 3px;">
-                                <span>6. Satuan Pelaksana SDA Kecamatan.</span>
-                            </label>
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-top: 8px;">6. Satuan Pelaksana SDA Kecamatan:</div>
+                            <div style="padding-left: 20px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Cilincing" style="margin-top: 3px;">
+                                    <span>Cilincing</span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Pademangan" style="margin-top: 3px;">
+                                    <span>Pademangan</span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Kelapa Gading" style="margin-top: 3px;">
+                                    <span>Kelapa Gading</span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Koja" style="margin-top: 3px;">
+                                    <span>Koja</span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Penjaringan" style="margin-top: 3px;">
+                                    <span>Penjaringan</span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                                    <input type="checkbox" wire:model="disposisi_checkboxes" value="Satuan Pelaksana SDA Kecamatan Tanjung Priok" style="margin-top: 3px;">
+                                    <span>Tanjung Priok</span>
+                                </label>
+                            </div>
                             <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85rem; margin-top: 4px;">
                                 <span style="margin-top: 8px;">7.</span>
                                 <textarea wire:model="disposisi_custom" class="form-input" placeholder="........................ (Tambahkan teks arahan khusus di sini)" style="width: 100%; min-height: 60px; padding: 8px;"></textarea>
@@ -504,4 +561,18 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             </button>
         </div>
     </form>
+    <script>
+        let isSubmitting = false;
+
+        document.querySelector('form').addEventListener('submit', function() {
+            isSubmitting = true;
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+            if (!isSubmitting) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
 </div>

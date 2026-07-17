@@ -194,10 +194,22 @@ new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
                     <span class="check-box">{{ $isChecked('Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah') }}</span>
                     <span>Ka. Sie Pengelolaan Sarana Pengendali Banjir, Air Bersih, dan Air Limbah.</span>
                 </div>
-                <div class="check-item">
+                <div class="check-item" style="align-items: flex-start;">
                     <span>6.</span>
-                    <span class="check-box">{{ in_array('Satuan Pelaksana SDA Kecamatan Cilincing', $checkboxes) || in_array('Satuan Pelaksana SDA Kecamatan', $checkboxes) ? '✓' : '' }}</span>
-                    <span>Satuan Pelaksana SDA Kecamatan.</span>
+                    <span style="display: flex; flex-direction: column; gap: 4px; width: 100%;">
+                        <div>Satuan Pelaksana SDA Kecamatan:</div>
+                        @php
+                            $kecamatans = ['Cilincing', 'Pademangan', 'Kelapa Gading', 'Koja', 'Penjaringan', 'Tanjung Priok'];
+                        @endphp
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 2px; padding-left: 4px;">
+                            @foreach($kecamatans as $kec)
+                                <div style="display: flex; gap: 6px;">
+                                    <span class="check-box" style="margin-top: 1px; width: 14px; height: 14px; line-height: 14px; font-size: 10px;">{{ in_array('Satuan Pelaksana SDA Kecamatan ' . $kec, $checkboxes) || in_array('Satuan Pelaksana SDA Kecamatan', $checkboxes) ? '✓' : '' }}</span>
+                                    <span style="font-size: 0.9em;">{{ $kec }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </span>
                 </div>
                 <div class="check-item">
                     <span>7.</span>

@@ -135,24 +135,21 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                     <div style="max-width:140px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size: 0.85rem;" title="{{ $surat->formatted_disposisi }}">{{ $surat->formatted_disposisi }}</div>
                                 </td>
                                 <td style="text-align: center;">
-                                    @if($surat->scan_file && is_array($surat->scan_file) && count($surat->scan_file) > 0)
-                                        @if(count($surat->scan_file) == 1)
-                                            <a href="{{ Storage::url($surat->scan_file[0]) }}" target="_blank" title="Lihat Scan" style="display:inline-block; padding: 4px 8px; background: #fef2f2; color: #ef4444; border-radius: 6px;">
-                                                📄 1 File
-                                            </a>
-                                        @else
-                                            <div style="position: relative; display: inline-block;">
-                                                <span title="Buka Detail untuk melihat file" style="display:inline-block; padding: 4px 8px; background: #fef2f2; color: #ef4444; border-radius: 6px; cursor: help; font-size: 0.8rem; font-weight: 600;">
-                                                    📄 {{ count($surat->scan_file) }} File
-                                                </span>
-                                            </div>
-                                        @endif
+                                    @if($surat->dokumen_id)
+                                        <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" title="Lihat Dokumen & Upload File" style="display:inline-block; padding: 4px 8px; background: #fef2f2; color: #ef4444; border-radius: 6px;">
+                                            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                                        </a>
                                     @else
                                         <span style="color: var(--text-muted); font-size: 0.8rem;">-</span>
                                     @endif
                                 </td>
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 6px; justify-content: center;">
+                                        @if($surat->dokumen_id)
+                                            <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: #10b981;" title="Detail Dokumen">
+                                                👁️
+                                            </a>
+                                        @endif
                                         <a href="/surat-masuk/{{ $surat->id }}/disposisi" target="_blank" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: #0284c7;" title="Cetak Disposisi">
                                             🖨️
                                         </a>

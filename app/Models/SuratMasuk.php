@@ -13,6 +13,7 @@ class SuratMasuk extends Model
 
     protected $casts = [
         'scan_file' => 'array',
+        'detail_acaras' => 'array',
     ];
 
     public function bundle()
