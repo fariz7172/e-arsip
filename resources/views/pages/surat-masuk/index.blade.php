@@ -34,11 +34,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
     public function with(): array
     {
-        $query = SuratMasuk::with('dokumen.fileAttachments')->orderBy('no_urut', 'desc');
+        $query = SuratMasuk::with('dokumen.fileAttachments')->orderByRaw('CAST(kode AS UNSIGNED) DESC');
 
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('no_surat', 'like', '%' . $this->search . '%')
+                  ->orWhere('kode', 'like', '%' . $this->search . '%')
                   ->orWhere('perihal', 'like', '%' . $this->search . '%')
                   ->orWhere('asal_surat', 'like', '%' . $this->search . '%')
                   ->orWhere('distribusi', 'like', '%' . $this->search . '%');

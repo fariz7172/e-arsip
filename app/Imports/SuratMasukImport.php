@@ -28,9 +28,9 @@ class SuratMasukImport implements OnEachRow, WithHeadingRow, WithBatchInserts, W
         if (!empty($hyperlinks)) {
             $row['scan'] = implode(',', $hyperlinks);
         }
-        // Skip empty rows
-        if (!array_filter($row)) {
-            return null;
+        // Skip empty rows (or rows that only have a 'no' column filled due to Excel drag)
+        if (empty($row['no_lembar_disposisi']) && empty($row['perihal_berkas']) && empty($row['no_surat'])) {
+            return;
         }
 
         $tanggal = $this->parseDate($row['tanggal'] ?? null);
