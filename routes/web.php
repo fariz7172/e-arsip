@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Volt::route('/pdf-compressor', 'pdf-compressor')->name('pdf-compressor');
     // Buku Agenda - Surat Masuk
     Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
+    Route::get('/surat-masuk/export', [\App\Http\Controllers\SuratMasukExcelController::class, 'export'])->name('surat-masuk.export');
+    Route::post('/surat-masuk/import', [\App\Http\Controllers\SuratMasukExcelController::class, 'import'])->name('surat-masuk.import');
     Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
     Volt::route('/surat-masuk/{id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
     Volt::route('/surat-masuk/{id}/disposisi', 'surat-masuk.disposisi')->name('surat-masuk.disposisi');

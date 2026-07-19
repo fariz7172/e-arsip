@@ -265,12 +265,18 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                             {{ $file->ukuran_format }} · {{ strtoupper($file->extension) }}
                         </div>
                         <div class="file-preview-actions">
-                            <a href="{{ route('file.preview', $file) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; justify-content: center;">
-                                👁️ Preview
-                            </a>
-                            <a href="{{ route('file.download', $file) }}" class="btn btn-sm btn-primary" style="flex: 1; justify-content: center;">
-                                ⬇️ Download
-                            </a>
+                            @if($file->disk === 'url')
+                                <a href="{{ $file->path }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; justify-content: center;">
+                                    🌐 Buka Tautan Google Drive
+                                </a>
+                            @else
+                                <a href="{{ route('file.preview', $file) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; justify-content: center;">
+                                    👁️ Preview
+                                </a>
+                                <a href="{{ route('file.download', $file) }}" class="btn btn-sm btn-primary" style="flex: 1; justify-content: center;">
+                                    ⬇️ Download
+                                </a>
+                            @endif
                         </div>
                         @if(auth()->user()->isAdmin())
                             <button wire:click="hapusFile({{ $file->id }})"

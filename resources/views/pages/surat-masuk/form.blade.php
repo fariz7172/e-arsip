@@ -512,11 +512,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         @if(!empty($existing_scans))
                             @foreach($existing_scans as $index => $scan)
                                 <div style="margin-bottom: 8px; padding: 8px; background: white; border-radius: 6px; border: 1px solid #bae6fd; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="display: flex; align-items: center; gap: 6px;">
-                                        📄 {{ Str::afterLast($scan, '/') }}
+                                    <span style="display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" title="{{ $scan }}">
+                                        📄 {{ Str::startsWith($scan, 'http') ? 'Tautan Eksternal (Google Drive dll)' : Str::afterLast($scan, '/') }}
                                     </span>
                                     <div style="display: flex; gap: 8px;">
-                                        <a href="{{ Storage::url($scan) }}" target="_blank" style="color: var(--primary); font-weight: 600;">Lihat</a>
+                                        <a href="{{ Str::startsWith($scan, 'http') ? $scan : Storage::url($scan) }}" target="_blank" style="color: var(--primary); font-weight: 600;">Lihat</a>
                                         <button type="button" wire:click="deleteExistingFile({{ $index }})" style="color: var(--danger); font-weight: 600; border: none; background: none; cursor: pointer;">Hapus</button>
                                     </div>
                                 </div>
