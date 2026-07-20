@@ -47,7 +47,7 @@ class SuratKeluarImport implements OnEachRow, WithHeadingRow
             'tanggal' => $tanggal,
             'no_surat' => $row['no_surat'] ?? null,
             'tujuan_surat' => Str::limit($row['kepada'] ?? '-', 250),
-            'perihal' => Str::limit($row['perihal'] ?? '-', 500),
+            'perihal' => $row['perihal'] ?? '-',
             'tembusan' => $row['tembusan'] ? Str::limit($row['tembusan'], 250) : null,
             'tgl_masuk_kasubag' => $tgl_masuk_kasubag,
             'tgl_masuk_kasudin' => $tgl_masuk_kasudin,
