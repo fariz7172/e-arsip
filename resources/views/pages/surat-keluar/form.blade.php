@@ -93,15 +93,15 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
         $data = [
             'no_urut' => $this->no_urut,
-            'tanggal' => $this->tanggal,
+            'tanggal' => $this->tanggal ?: null,
             'no_surat' => $this->no_surat,
             'tujuan_surat' => $this->tujuan_surat,
             'perihal' => $this->perihal,
             'tembusan' => $this->tembusan,
-            'tgl_masuk_kasubag' => $this->tgl_masuk_kasubag,
-            'tgl_masuk_kasudin' => $this->tgl_masuk_kasudin,
-            'tgl_keluar' => $this->tgl_keluar,
-            'tgl_dikembalikan_tu' => $this->tgl_dikembalikan_tu,
+            'tgl_masuk_kasubag' => $this->tgl_masuk_kasubag ?: null,
+            'tgl_masuk_kasudin' => $this->tgl_masuk_kasudin ?: null,
+            'tgl_keluar' => $this->tgl_keluar ?: null,
+            'tgl_dikembalikan_tu' => $this->tgl_dikembalikan_tu ?: null,
             'keterangan' => $this->keterangan,
             'bundle_id' => $this->bundle_id,
         ];
