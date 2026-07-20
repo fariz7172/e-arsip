@@ -34,7 +34,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
     public function with(): array
     {
-        $query = SuratKeluar::with('dokumen.fileAttachments')->orderBy('no_urut', 'desc');
+        $query = SuratKeluar::with('dokumen.fileAttachments')
+            ->orderBy('tanggal', 'desc')
+            ->orderByRaw('CAST(no_urut AS UNSIGNED) DESC');
 
         if (!empty($this->search)) {
             $query->where(function($q) {
@@ -58,12 +60,44 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             <p style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">Kelola dan lacak riwayat pembuatan surat keluar serta persetujuannya.</p>
         </div>
         
-        <div style="display:flex; gap: 8px;">
+        <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ asset('assets/surat-keluar-template.xlsx') }}" download class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;" title="Download Template Excel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Template
+            </a>
+            
+            <a href="{{ route('surat-keluar.export') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export ke Excel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+                Export
+            </a>
+
+            <form action="{{ route('surat-keluar.import') }}" method="POST" id="import_form" enctype="multipart/form-data" style="display:inline;">
+                @csrf
+                <input type="file" name="file" id="import_file" style="display: none;" onchange="if(confirm('Apakah Anda yakin ingin mengimpor data ini?')) { document.getElementById('import-overlay').style.display='flex'; this.form.submit(); }" accept=".xlsx,.xls,.csv">
+                <button type="button" onclick="document.getElementById('import_file').click()" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #f59e0b;" title="Import dari Excel">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 12 15 15"/></svg>
+                    Import
+                </button>
+            </form>
+
             <a href="/surat-keluar/create" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Tambah Surat Keluar
+                Tambah
             </a>
         </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="import-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: white;">
+        <div style="width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; margin-bottom: 20px; animation: spin 1s linear infinite;"></div>
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">Sedang Mengimpor Data...</h2>
+        <p style="font-size: 1rem; color: #d1d5db;">Mohon jangan tutup atau muat ulang halaman ini.</p>
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
     </div>
 
     @if(session('success'))

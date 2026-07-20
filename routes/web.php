@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
 
     // Buku Agenda - Surat Keluar
     Volt::route('/surat-keluar', 'surat-keluar.index')->name('surat-keluar.index');
+    Route::get('/surat-keluar/export', [\App\Http\Controllers\SuratKeluarExcelController::class, 'export'])->name('surat-keluar.export');
+    Route::post('/surat-keluar/import', [\App\Http\Controllers\SuratKeluarExcelController::class, 'import'])->name('surat-keluar.import');
     Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
     Volt::route('/surat-keluar/{id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
 });
