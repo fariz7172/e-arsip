@@ -88,7 +88,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'tgl_dikembalikan_tu' => 'nullable|date',
             'keterangan' => 'nullable|string',
             'bundle_id' => 'nullable|exists:bundles,id',
-            'scan_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240', // Max 10MB per file
+            'scan_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:51200', // Max 50MB per file
         ]);
 
         $data = [
@@ -341,7 +341,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     </div>
 
                     <div>
-                        <label class="form-label" style="font-size: 0.85rem;">Upload Scan Fisik (Opsional)</label>
+                        <label class="form-label" style="font-size: 0.85rem;">Upload Scan Fisik (Opsional, Maks. 50MB)</label>
                         
                         @if(!empty($existing_scans))
                             @foreach($existing_scans as $index => $scan)

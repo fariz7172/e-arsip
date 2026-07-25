@@ -47,7 +47,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
         $this->validate([
             'newFiles' => 'required|array|min:1',
-            'newFiles.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,webp|max:10240',
+            'newFiles.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,webp|max:51200',
         ]);
 
         $bundleId = $this->dokumen->kategori->bundle_id;
@@ -144,7 +144,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             <h3 style="font-weight: 700; margin-bottom: 16px;">📤 Upload File Tambahan</h3>
             <form wire:submit="simpanFileTambahan">
                 <div class="form-group">
-                    <label class="form-label">Pilih File (PDF / Gambar, maks. 10MB)</label>
+                    <label class="form-label">Pilih File (PDF / Gambar, maks. 50MB)</label>
                     <div class="file-upload-area" 
                          x-data="{
                             isCompressing: false,

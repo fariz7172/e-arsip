@@ -9,9 +9,32 @@ class SuratMasuk extends Model
 {
     use HasFactory;
     
-    protected $guarded = [];
+    protected $fillable = [
+        'no_urut',
+        'kode',
+        'tanggal',
+        'no_surat',
+        'perihal',
+        'asal_surat',
+        'tanggal_acara',
+        'waktu_acara',
+        'tempat_acara',
+        'detail_acaras',
+        'tgl_masuk',
+        'tgl_keluar',
+        'tgl_dikembalikan',
+        'distribusi',
+        'disposisi',
+        'sifat_surat',
+        'keterangan',
+        'scan_file',
+        'bundle_id',
+        'dokumen_id',
+        'is_reses',
+    ];
 
     protected $casts = [
+        'is_reses' => 'boolean',
         'scan_file' => 'array',
         'detail_acaras' => 'array',
     ];

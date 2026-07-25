@@ -607,8 +607,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     @endforeach
                 </div>
                 @if($filteredSuratMasuk->hasPages())
-                    <div style="margin-top: 16px;">
-                        {{ $filteredSuratMasuk->links(data: ['scrollTo' => false]) }}
+                    <div style="margin-top: 16px; padding: 16px; border-top: 1px solid var(--border-color); background: var(--bg-card); border-radius: var(--radius-md);">
+                        {{ $filteredSuratMasuk->links('vendor.pagination.custom', data: ['scrollTo' => false]) }}
                     </div>
                 @endif
             </details>
@@ -652,8 +652,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     @endforeach
                 </div>
                 @if($filteredSuratKeluar->hasPages())
-                    <div style="margin-top: 16px;">
-                        {{ $filteredSuratKeluar->links(data: ['scrollTo' => false]) }}
+                    <div style="margin-top: 16px; padding: 16px; border-top: 1px solid var(--border-color); background: var(--bg-card); border-radius: var(--radius-md);">
+                        {{ $filteredSuratKeluar->links('vendor.pagination.custom', data: ['scrollTo' => false]) }}
                     </div>
                 @endif
             </details>

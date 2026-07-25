@@ -81,3 +81,27 @@ Route::middleware('auth')->group(function () {
     Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
     Volt::route('/surat-keluar/{id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
 });
+
+// API Endpoint (Publik/External) untuk Aplikasi Lain Menerima Data Reses
+Route::get('/api/reses', function (\Illuminate\Http\Request $request) {
+    $query = \App\Models\SuratMasuk::with('bundle', 'dokumen.fileAttachments')
+        ->where('is_reses', true);
+
+    if ($request->has('search')) {
+        $search = $request->get('search');
+        $query->where(function ($q) use ($search) {
+            $q->where('no_surat', 'like', "%{$search}%")
+              ->orWhere('perihal', 'like', "%{$search}%")
+              ->orWhere('asal_surat', 'like', "%{$search}%");
+        });
+    }
+
+    $reses = $query->orderBy('tanggal', 'desc')->get();
+
+    return response()->json([
+        'status' => 'success',
+        'total' => $reses->count(),
+        'data' => $reses
+    ]);
+});
+

@@ -64,12 +64,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
         $this->validate([
             'files' => 'required|array|min:1',
-            'files.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,webp|max:10240',
+            'files.*' => 'file|mimes:pdf,jpg,jpeg,png,gif,webp|max:51200',
         ], [
             'files.required' => 'Minimal upload 1 file.',
             'files.min' => 'Minimal upload 1 file.',
             'files.*.mimes' => 'File harus berformat PDF, JPG, PNG, GIF, atau WebP.',
-            'files.*.max' => 'Ukuran file maksimal 10MB.',
+            'files.*.max' => 'Ukuran file maksimal 50MB.',
         ]);
 
         $judul = pathinfo($this->files[0]->getClientOriginalName(), PATHINFO_FILENAME);
@@ -215,7 +215,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
             <form wire:submit="simpanDokumen">
                 <div class="form-group">
-                    <label class="form-label">File Lampiran * (PDF / Gambar, maks. 10MB)</label>
+                    <label class="form-label">File Lampiran * (PDF / Gambar, maks. 50MB)</label>
                     <div class="file-upload-area" 
                          x-data="{
                             isCompressing: false,
@@ -266,7 +266,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                         
                         <div class="file-upload-icon">📎</div>
                         <div class="file-upload-text">Klik atau drag file ke area ini</div>
-                        <div class="file-upload-hint">PDF, JPG, PNG, GIF, WebP — Maks. 10MB per file</div>
+                        <div class="file-upload-hint">PDF, JPG, PNG, GIF, WebP — Maks. 50MB per file</div>
                         
                         <button type="button" @click="$refs.fileInput.click()" class="btn btn-secondary mt-3" style="width: 100%; justify-content: center;">
                             Pilih File dari Perangkat

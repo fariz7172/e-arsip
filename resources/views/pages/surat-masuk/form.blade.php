@@ -34,6 +34,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     
     public $scan_files = []; // Untuk upload file baru (multiple)
     public $existing_scans = []; // Menampilkan file scan yang sudah ada
+    public $is_reses = false;
 
     public function title(): string
     {
@@ -75,6 +76,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->keterangan = $this->surat->keterangan;
             $this->bundle_id = $this->surat->bundle_id;
             $this->existing_scans = is_array($this->surat->scan_file) ? $this->surat->scan_file : [];
+            $this->is_reses = (bool) $this->surat->is_reses;
         } else {
             // Auto-increment No Urut based on current year
             $maxNo = SuratMasuk::whereYear('created_at', date('Y'))->max('no_urut');
@@ -132,7 +134,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'sifat_surat' => 'nullable|string|max:50',
             'keterangan' => 'nullable|string',
             'bundle_id' => 'nullable|exists:bundles,id',
-            'scan_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240', // Max 10MB per file
+            'scan_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:51200', // Max 50MB per file
         ]);
 
         $data = [
@@ -157,6 +159,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'sifat_surat' => $this->sifat_surat,
             'keterangan' => $this->keterangan,
             'bundle_id' => $this->bundle_id,
+            'is_reses' => (bool) $this->is_reses,
         ];
 
         $suratModel = null;
@@ -285,6 +288,58 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 </ul>
             </div>
         @endif
+
+        <style>
+            .reses-switch {
+                position: relative;
+                display: inline-block;
+                width: 52px;
+                height: 28px;
+            }
+            .reses-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .reses-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: #cbd5e1;
+                transition: .3s;
+                border-radius: 34px;
+            }
+            .reses-slider:before {
+                position: absolute;
+                content: "";
+                height: 20px; width: 20px;
+                left: 4px; bottom: 4px;
+                background-color: white;
+                transition: .3s;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .reses-switch input:checked + .reses-slider {
+                background-color: #10b981;
+            }
+            .reses-switch input:checked + .reses-slider:before {
+                transform: translateX(24px);
+            }
+        </style>
+        <div style="margin-bottom: 24px; padding: 16px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <div style="font-weight: 700; color: #15803d; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                    ⚡ Jadikan sebagai Data Reses (Untuk Aplikasi Eksternal)
+                </div>
+                <div style="font-size: 0.8rem; color: #166534; margin-top: 2px;">
+                    Aktifkan switch di samping agar surat ini masuk ke dalam Endpoint API Reses.
+                </div>
+            </div>
+            <label class="reses-switch">
+                <input type="checkbox" wire:model="is_reses">
+                <span class="reses-slider"></span>
+            </label>
+        </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
             
@@ -507,7 +562,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     </div>
 
                     <div>
-                        <label class="form-label" style="font-size: 0.85rem; color: #0369a1;">Upload Scan Fisik (Opsional)</label>
+                        <label class="form-label" style="font-size: 0.85rem; color: #0369a1;">Upload Scan Fisik (Opsional, Maks. 50MB)</label>
                         
                         @if(!empty($existing_scans))
                             @foreach($existing_scans as $index => $scan)
@@ -553,7 +608,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             </div>
         </div>
 
-        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px;">
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap;">
             <a href="/surat-masuk" class="btn" style="background: #f1f5f9; color: var(--text-secondary); font-weight: 600;">Batalkan</a>
             <button type="submit" class="btn btn-primary" style="font-weight: 700; padding-left: 24px; padding-right: 24px;">
                 <span wire:loading.remove wire:target="save">Simpan Data</span>

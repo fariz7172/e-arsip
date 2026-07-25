@@ -41,6 +41,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('no_surat', 'like', '%' . $this->search . '%')
+                  ->orWhere('no_urut', 'like', '%' . $this->search . '%')
                   ->orWhere('perihal', 'like', '%' . $this->search . '%')
                   ->orWhere('tujuan_surat', 'like', '%' . $this->search . '%')
                   ->orWhere('tembusan', 'like', '%' . $this->search . '%');
@@ -117,7 +118,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 </select>
                 <div style="flex: 1; position: relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Surat, Tujuan, Perihal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Urut, No Surat, Tujuan, Perihal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
                 </div>
             </div>
         </div>
