@@ -140,6 +140,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 $q->where('id', 'like', '%' . $this->search . '%')
                   ->orWhere('no_spm', 'like', '%' . $this->search . '%')
                   ->orWhere('keperluan', 'like', '%' . $this->search . '%')
+                  ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(contract, '$.nomor_kontrak')) LIKE ?", ['%' . $this->search . '%'])
                   ->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(vendor, '$.nama_perusahaan')) LIKE ?", ['%' . $this->search . '%']);
             });
         }
@@ -223,7 +224,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     <option value="500">500 Data</option>
                 </select>
                 <div style="flex: 1; min-width: 200px;">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, No Kontrak, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
                 </div>
             </div>
         </div>
@@ -235,6 +236,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                         <tr>
                             <th>ID API</th>
                             <th>No. SPM</th>
+                            <th>No. Kontrak</th>
                             <th>Tanggal SPM</th>
                             <th>Keperluan</th>
                             <th>Jumlah</th>
@@ -247,6 +249,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 <td style="font-weight: bold;">{{ $payment->id }}</td>
                                 <td style="color:var(--text-muted); font-family:'Courier New',monospace; font-size:0.8rem;">
                                     {{ $payment->no_spm ?? '-' }}
+                                </td>
+                                <td style="font-family:'Courier New',monospace; font-size:0.85rem; color:var(--text-primary);">
+                                    {{ $payment->contract->nomor_kontrak ?? '-' }}
                                 </td>
                                 <td>
                                     {{ $payment->tgl_spm?->format('d M Y') ?? '-' }}
