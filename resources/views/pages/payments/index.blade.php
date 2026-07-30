@@ -224,7 +224,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     <option value="500">500 Data</option>
                 </select>
                 <div style="flex: 1; min-width: 200px;">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, No Kontrak, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari ID, No SPM, No Kontrak, Perusahaan, atau Keperluan..." style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; width: 100%; font-size:0.9rem;">
                 </div>
             </div>
         </div>
@@ -237,6 +237,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                             <th>ID API</th>
                             <th>No. SPM</th>
                             <th>No. Kontrak</th>
+                            <th>Perusahaan</th>
                             <th>Tanggal SPM</th>
                             <th>Keperluan</th>
                             <th>Jumlah</th>
@@ -252,6 +253,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </td>
                                 <td style="font-family:'Courier New',monospace; font-size:0.85rem; color:var(--text-primary);">
                                     {{ $payment->contract->nomor_kontrak ?? '-' }}
+                                </td>
+                                <td>
+                                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-primary); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $payment->vendor->nama_perusahaan ?? '-' }}">
+                                        {{ $payment->vendor->nama_perusahaan ?? '-' }}
+                                    </div>
                                 </td>
                                 <td>
                                     {{ $payment->tgl_spm?->format('d M Y') ?? '-' }}
