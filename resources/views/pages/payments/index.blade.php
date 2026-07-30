@@ -230,9 +230,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         </div>
 
         @if($payments->count() > 0)
-            <div class="table-container" style="max-height: 60vh; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div class="table-container" style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 8px;">
                 <table style="width: 100%; border-collapse: collapse; min-width: 1000px;">
-                    <thead style="position: sticky; top: 0; z-index: 10; background: #f8fafc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <thead style="background: #f8fafc; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                         <tr>
                             <th>ID API</th>
                             <th>No. SPM</th>
