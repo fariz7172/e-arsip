@@ -36,9 +36,49 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $existing_scans = []; // Menampilkan file scan yang sudah ada
     public $is_reses = false;
 
+    public $lastGeneratedKode = '';
+    public $lastGeneratedNoUrut = '';
+
     public function title(): string
     {
         return $this->surat ? 'Edit Surat Masuk' : 'Tambah Surat Masuk';
+    }
+
+    public function generateNextKode()
+    {
+        $lastSurat = SuratMasuk::whereNotNull('kode')->where('kode', '!=', '')->orderBy('id', 'desc')->first();
+        if ($lastSurat && $lastSurat->kode) {
+            if (preg_match('/(\d+)$/', $lastSurat->kode, $matches)) {
+                $number = $matches[1];
+                $length = strlen($number);
+                $newNumber = str_pad(intval($number) + 1, $length, '0', STR_PAD_LEFT);
+                return preg_replace('/(\d+)$/', $newNumber, $lastSurat->kode);
+            }
+        }
+        return '00001';
+    }
+
+    public function generateNextNoUrut()
+    {
+        $maxNo = SuratMasuk::whereYear('created_at', date('Y'))->max('no_urut');
+        return $maxNo ? $maxNo + 1 : 1;
+    }
+
+    public function refreshAutoIncrements()
+    {
+        if (!$this->surat) {
+            $nextKode = $this->generateNextKode();
+            if ($this->kode === $this->lastGeneratedKode && $this->kode !== $nextKode) {
+                $this->kode = $nextKode;
+                $this->lastGeneratedKode = $nextKode;
+            }
+
+            $nextNoUrut = $this->generateNextNoUrut();
+            if ($this->no_urut == $this->lastGeneratedNoUrut && $this->no_urut != $nextNoUrut) {
+                $this->no_urut = $nextNoUrut;
+                $this->lastGeneratedNoUrut = $nextNoUrut;
+            }
+        }
     }
 
     public function mount($id = null)
@@ -79,8 +119,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->is_reses = (bool) $this->surat->is_reses;
         } else {
             // Auto-increment No Urut based on current year
-            $maxNo = SuratMasuk::whereYear('created_at', date('Y'))->max('no_urut');
-            $this->no_urut = $maxNo ? $maxNo + 1 : 1;
+            $this->no_urut = $this->generateNextNoUrut();
+            $this->lastGeneratedNoUrut = $this->no_urut;
+            
+            // Auto-increment Kode
+            $this->kode = $this->generateNextKode();
+            $this->lastGeneratedKode = $this->kode;
             $this->tanggal = date('Y-m-d');
             $this->sifat_surat = 'Biasa';
             $this->bundle_id = 1;
@@ -168,12 +212,28 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $suratModel = $this->surat;
             $message = 'Data Surat Masuk berhasil diperbarui.';
         } else {
-            if (empty($data['no_urut'])) {
-                $lastSurat = SuratMasuk::orderByRaw('CAST(no_urut AS UNSIGNED) DESC')->first();
-                $data['no_urut'] = $lastSurat ? intval($lastSurat->no_urut) + 1 : 1;
-            }
-            $suratModel = SuratMasuk::create($data);
-            $message = 'Surat Masuk baru berhasil ditambahkan.';
+            \Illuminate\Support\Facades\DB::transaction(function () use (&$data, &$suratModel, &$message) {
+                // Anti-tabrakan No Urut
+                if (empty($data['no_urut']) || $data['no_urut'] == $this->lastGeneratedNoUrut || SuratMasuk::whereYear('created_at', date('Y'))->where('no_urut', $data['no_urut'])->lockForUpdate()->exists()) {
+                    $maxNo = SuratMasuk::whereYear('created_at', date('Y'))->lockForUpdate()->max('no_urut');
+                    $data['no_urut'] = $maxNo ? $maxNo + 1 : 1;
+                    $this->no_urut = $data['no_urut'];
+                }
+
+                // Anti-tabrakan Kode
+                if ($data['kode'] === $this->lastGeneratedKode || (!empty($data['kode']) && SuratMasuk::where('kode', $data['kode'])->lockForUpdate()->exists())) {
+                    $lastSurat = SuratMasuk::whereNotNull('kode')->where('kode', '!=', '')->orderBy('id', 'desc')->lockForUpdate()->first();
+                    $newKode = '00001';
+                    if ($lastSurat && $lastSurat->kode && preg_match('/(\d+)$/', $lastSurat->kode, $matches)) {
+                        $newKode = preg_replace('/(\d+)$/', str_pad(intval($matches[1]) + 1, strlen($matches[1]), '0', STR_PAD_LEFT), $lastSurat->kode);
+                    }
+                    $data['kode'] = $newKode;
+                    $this->kode = $newKode;
+                }
+                
+                $suratModel = SuratMasuk::create($data);
+                $message = 'Surat Masuk baru berhasil ditambahkan.';
+            });
         }
 
         $allFiles = $this->existing_scans ?? [];
@@ -422,9 +482,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
 
                     <div style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px;">
                         <input type="hidden" wire:model="no_urut">
-                        <div>
+                        <div wire:poll.5s="refreshAutoIncrements">
                             <label class="form-label" style="font-size: 0.85rem;">Kode</label>
-                            <input type="text" wire:model="kode" class="form-input" style="width: 100%;">
+                            <div style="position: relative;">
+                                <input type="text" wire:model.live.debounce.500ms="kode" class="form-input" style="width: 100%; padding-right: 60px;">
+                                @if(!$surat && $kode === $lastGeneratedKode)
+                                    <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; font-weight: 600; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; pointer-events: none;">Otomatis</span>
+                                @endif
+                            </div>
                         </div>
                     </div>
 

@@ -127,8 +127,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         </div>
 
         @if($surats->count() > 0)
-            <div class="table-container" style="overflow-x: auto;">
-                <table style="min-width: 1500px;">
+            <div class="table-container" style="overflow-x: auto; width: 100%; max-width: 100%; border: 1px solid var(--border-color); border-radius: 8px;">
+                <table style="min-width: 1500px; width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
                             <th style="width: 60px; text-align: center;">Kode</th>

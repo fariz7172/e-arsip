@@ -446,6 +446,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            min-width: 0;
             transition: var(--transition-slow);
         }
 
@@ -644,6 +645,7 @@
         .main-content {
             flex: 1;
             padding: 28px 32px;
+            min-width: 0;
         }
 
         /* ===========================
@@ -749,6 +751,7 @@
             padding: 24px;
             transition: var(--transition-base);
             box-shadow: var(--shadow-xs);
+            min-width: 0;
         }
 
         .card:hover {
