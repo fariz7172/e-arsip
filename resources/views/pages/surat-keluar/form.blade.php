@@ -27,10 +27,29 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     
     public $scan_files = []; // Untuk upload file baru (multiple)
     public $existing_scans = []; // Menampilkan file scan yang sudah ada
+    
+    public $lastGeneratedNoUrut = '';
 
     public function title(): string
     {
         return $this->surat ? 'Edit Surat Keluar' : 'Tambah Surat Keluar';
+    }
+
+    public function generateNextNoUrut()
+    {
+        $maxNo = SuratKeluar::whereYear('created_at', date('Y'))->max('no_urut');
+        return $maxNo ? $maxNo + 1 : 1;
+    }
+
+    public function refreshAutoIncrements()
+    {
+        if (!$this->surat) {
+            $nextNoUrut = $this->generateNextNoUrut();
+            if ($this->no_urut == $this->lastGeneratedNoUrut && $this->no_urut != $nextNoUrut) {
+                $this->no_urut = $nextNoUrut;
+                $this->lastGeneratedNoUrut = $nextNoUrut;
+            }
+        }
     }
 
     public function mount($id = null)
@@ -52,8 +71,8 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->existing_scans = is_array($this->surat->scan_file) ? $this->surat->scan_file : [];
         } else {
             // Auto-increment No Urut based on current year
-            $maxNo = SuratKeluar::whereYear('created_at', date('Y'))->max('no_urut');
-            $this->no_urut = $maxNo ? $maxNo + 1 : 1;
+            $this->no_urut = $this->generateNextNoUrut();
+            $this->lastGeneratedNoUrut = $this->no_urut;
             $this->tanggal = date('Y-m-d');
             $this->bundle_id = 2;
         }
@@ -112,8 +131,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $suratModel = $this->surat;
             $message = 'Data Surat Keluar berhasil diperbarui.';
         } else {
-            $suratModel = SuratKeluar::create($data);
-            $message = 'Surat Keluar baru berhasil ditambahkan.';
+            \Illuminate\Support\Facades\DB::transaction(function () use (&$data, &$suratModel, &$message) {
+                // Anti-tabrakan No Urut
+                if (empty($data['no_urut']) || $data['no_urut'] == $this->lastGeneratedNoUrut || SuratKeluar::whereYear('created_at', date('Y'))->where('no_urut', $data['no_urut'])->lockForUpdate()->exists()) {
+                    $maxNo = SuratKeluar::whereYear('created_at', date('Y'))->lockForUpdate()->max('no_urut');
+                    $data['no_urut'] = $maxNo ? $maxNo + 1 : 1;
+                    $this->no_urut = $data['no_urut'];
+                }
+                
+                $suratModel = SuratKeluar::create($data);
+                $message = 'Surat Keluar baru berhasil ditambahkan.';
+            });
         }
 
         $allFiles = $this->existing_scans ?? [];
@@ -231,7 +259,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div style="background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color);">
                     <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">Informasi Surat Keluar</h3>
                     
-                    <input type="hidden" wire:model="no_urut">
+                    <div wire:poll.5s="refreshAutoIncrements">
+                        <input type="hidden" wire:model="no_urut">
+                    </div>
                     <div style="margin-bottom: 12px;">
                         <label class="form-label" style="font-size: 0.85rem;">Tanggal Surat</label>
                         <input type="date" wire:model="tanggal" class="form-input" style="width: 100%;">
