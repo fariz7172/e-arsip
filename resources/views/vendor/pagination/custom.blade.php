@@ -4,7 +4,7 @@
         @if ($paginator->onFirstPage())
             <span class="page-item disabled">&laquo; Prev</span>
         @else
-            <button wire:click="previousPage" wire:loading.attr="disabled" class="page-item">&laquo; Prev</button>
+            <button wire:click="previousPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" class="page-item">&laquo; Prev</button>
         @endif
 
         {{-- Pagination Elements --}}
@@ -20,7 +20,7 @@
                     @if ($page == $paginator->currentPage())
                         <span class="page-item active">{{ $page }}</span>
                     @else
-                        <button wire:click="gotoPage({{ $page }})" wire:loading.attr="disabled" class="page-item">{{ $page }}</button>
+                        <button wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" class="page-item">{{ $page }}</button>
                     @endif
                 @endforeach
             @endif
@@ -28,7 +28,7 @@
 
         {{-- Next Page Link --}}
         @if ($paginator->hasMorePages())
-            <button wire:click="nextPage" wire:loading.attr="disabled" class="page-item">Next &raquo;</button>
+            <button wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" class="page-item">Next &raquo;</button>
         @else
             <span class="page-item disabled">Next &raquo;</span>
         @endif

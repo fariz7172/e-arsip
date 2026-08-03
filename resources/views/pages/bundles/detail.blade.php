@@ -94,7 +94,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         }
 
         return [
-            'filteredKategoris' => $kategorisQuery->get(),
+            'filteredKategoris' => $kategorisQuery->paginate(10, ['*'], 'catPage'),
             'filteredSuratMasuk' => $suratMasuksQuery->paginate(12, ['*'], 'smPage'),
             'filteredSuratKeluar' => $suratKeluarsQuery->paginate(12, ['*'], 'skPage'),
         ];
@@ -198,11 +198,22 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             justify-content: center;
             font-size: 1.1rem;
         }
+        .kategori-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 768px) {
+            .kategori-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         .dokumen-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: 12px;
-            padding: 4px 4px 16px 4px;
+            padding: 8px 4px 16px 4px;
         }
         .dokumen-card {
             background: var(--bg-card);
@@ -232,8 +243,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             color: var(--text-muted);
             margin-bottom: 10px;
             display: flex;
-            flex-direction: column;
-            gap: 2px;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
         }
         .file-mini-list {
             display: flex;
@@ -323,8 +336,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     @endif
 
     @if($filteredKategoris->count() > 0)
-        @foreach($filteredKategoris as $index => $kategori)
-            <div class="kategori-section">
+        <div class="kategori-grid">
+            @foreach($filteredKategoris as $index => $kategori)
+                <div class="kategori-section" style="margin-bottom: 0;">
                 <details open>
                     <summary class="kategori-header" style="list-style: none;">
                         <div class="kategori-header-left">
@@ -560,6 +574,13 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 </details>
             </div>
         @endforeach
+        </div>
+
+        @if($filteredKategoris->hasPages())
+            <div style="margin-top: 16px; padding: 16px; border: 1px solid var(--border-color); background: var(--bg-card); border-radius: var(--radius-md); margin-bottom: 24px;">
+                {{ $filteredKategoris->links('vendor.pagination.custom', data: ['scrollTo' => false]) }}
+            </div>
+        @endif
     @else
         <div class="card">
             <div class="empty-state">
