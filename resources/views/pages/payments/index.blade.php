@@ -31,6 +31,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public $newBundleKode = '';
     public $newBundleTahun = '';
     
+    public $dokumenOption = 'new'; // 'new' or 'existing'
+    public $searchDokumen = '';
+    public $selectedDokumenId = null;
+
     public $uploadedFiles = [];
 
     public function updatingSearch()
@@ -62,7 +66,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun', 'uploadedFiles']);
+        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun', 'uploadedFiles', 'dokumenOption', 'searchDokumen', 'selectedDokumenId']);
     }
 
     public function saveBundle()
@@ -71,7 +75,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
         if ($this->uploadOption === 'existing') {
             $this->validate(['selectedBundleId' => 'required|exists:bundles,id'], ['selectedBundleId.required' => 'Pilih bundle yang ada terlebih dahulu.']);
-            $payment->update(['bundle_id' => $this->selectedBundleId]);
+            
+            $updateData = ['bundle_id' => $this->selectedBundleId];
+            if ($this->dokumenOption === 'existing' && $this->selectedDokumenId) {
+                $updateData['dokumen_id'] = $this->selectedDokumenId;
+            }
+            $payment->update($updateData);
         } else {
             $this->validate([
                 'newBundleNama' => 'required|string|max:255',
@@ -89,17 +98,24 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         $bundleToUse = Bundle::find($payment->bundle_id);
 
         if (!empty($this->uploadedFiles) && $bundleToUse) {
-            $kategori = Kategori::firstOrCreate(
-                ['bundle_id' => $bundleToUse->id, 'nama' => 'Berkas Pendukung SPM'],
-                ['kode' => 'SPM', 'urutan' => 1]
-            );
+            if ($this->uploadOption === 'existing' && $this->dokumenOption === 'existing') {
+                $this->validate(['selectedDokumenId' => 'required|exists:dokumens,id'], ['selectedDokumenId.required' => 'Pilih dokumen yang ada terlebih dahulu.']);
+                $dokumen = Dokumen::find($this->selectedDokumenId);
+            } else {
+                $kategori = Kategori::firstOrCreate(
+                    ['bundle_id' => $bundleToUse->id, 'nama' => 'Berkas Pendukung SPM'],
+                    ['kode' => 'SPM', 'urutan' => 1]
+                );
 
-            $dokumen = Dokumen::create([
-                'kategori_id' => $kategori->id,
-                'judul' => 'Lampiran SPM: ' . ($payment->no_spm ?? '-'),
-                'tanggal_dokumen' => now(),
-                'uploaded_by' => auth()->id()
-            ]);
+                $dokumen = Dokumen::create([
+                    'kategori_id' => $kategori->id,
+                    'judul' => 'Lampiran SPM: ' . ($payment->no_spm ?? '-'),
+                    'tanggal_dokumen' => now(),
+                    'uploaded_by' => auth()->id()
+                ]);
+                // Simpan referensi dokumen_id ke payment agar tombol Lihat Berkas bisa mengarah ke sini
+                $payment->update(['dokumen_id' => $dokumen->id]);
+            }
 
             foreach ($this->uploadedFiles as $file) {
                 $path = $file->store('dokumen_files', 'public');
@@ -161,9 +177,29 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             }
         }
 
+        $dokumens = collect();
+        if ($this->selectedBundleId) {
+            $dokumenQuery = Dokumen::whereHas('kategori', function($q) {
+                $q->where('bundle_id', $this->selectedBundleId);
+            })->orderBy('created_at', 'desc');
+            
+            if (!empty($this->searchDokumen)) {
+                $dokumenQuery->where('judul', 'like', '%' . $this->searchDokumen . '%');
+            }
+            $dokumens = $dokumenQuery->limit(50)->get();
+
+            if ($this->selectedDokumenId && !$dokumens->contains('id', $this->selectedDokumenId)) {
+                $selectedDok = Dokumen::find($this->selectedDokumenId);
+                if ($selectedDok) {
+                    $dokumens->prepend($selectedDok);
+                }
+            }
+        }
+
         return [
             'payments' => $query->paginate($this->perPage),
-            'bundles' => $bundles
+            'bundles' => $bundles,
+            'dokumens' => $dokumens
         ];
     }
 }; ?>
@@ -279,9 +315,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                             Cetak
                                         </a>
                                         @if($payment->bundle_id)
-                                        <a href="/bundles/{{ $payment->bundle_id }}/detail" class="btn btn-sm" style="display: inline-flex; align-items: center; gap: 4px; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">
+                                        <a href="{{ $payment->dokumen_id ? '/dokumen/' . $payment->dokumen_id : '/bundles/' . $payment->bundle_id . '/detail' }}" class="btn btn-sm" style="display: inline-flex; align-items: center; gap: 4px; background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                                            Lihat Berkas
+                                            {{ $payment->dokumen_id ? 'Lihat File Dokumen' : 'Lihat Bundle' }}
                                         </a>
                                         @endif
                                     </div>
@@ -374,6 +410,62 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </div>
                                 @error('selectedBundleId') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
                             </div>
+
+                            @if($selectedBundleId)
+                                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border-color); padding-left: 24px;">
+                                    <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px; display:block;">Pilih Tujuan Dokumen (Opsional, jika ingin mengupload lampiran):</label>
+                                    
+                                    <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                            <input type="radio" wire:model.live="dokumenOption" value="new" style="accent-color: var(--primary);">
+                                            <span style="font-size: 0.85rem; font-weight: 500;">Buat Dokumen Baru</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                            <input type="radio" wire:model.live="dokumenOption" value="existing" style="accent-color: var(--primary);">
+                                            <span style="font-size: 0.85rem; font-weight: 500;">Pilih Dokumen Tersedia</span>
+                                        </label>
+                                    </div>
+
+                                    @if($dokumenOption === 'existing')
+                                        <div x-data="{ openDok: false }" style="position: relative; margin-top: 8px;" @click.away="openDok = false">
+                                            <!-- Selected Display Dokumen -->
+                                            <div @click="openDok = !openDok" style="border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; background: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">
+                                                    @if($selectedDokumenId)
+                                                        {{ collect($dokumens)->firstWhere('id', $selectedDokumenId)?->judul ?? 'Pilih Dokumen...' }}
+                                                    @else
+                                                        <span style="color: var(--text-muted); font-weight: normal;">-- Cari dan Pilih Dokumen --</span>
+                                                    @endif
+                                                </span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                                            </div>
+                                            
+                                            <!-- Dropdown List Dokumen -->
+                                            <div x-show="openDok" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px; background: white; border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50;">
+                                                <div style="padding: 8px; border-bottom: 1px solid var(--border-color);">
+                                                    <input type="text" wire:model.live.debounce.300ms="searchDokumen" placeholder="Ketik nama dokumen..." style="width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; outline: none; font-size: 0.8rem;">
+                                                </div>
+                                                
+                                                <div style="max-height: 200px; overflow-y: auto;">
+                                                    @if(count($dokumens) === 0)
+                                                        <div style="padding: 10px 12px; color: var(--text-muted); font-size: 0.8rem; text-align: center;">Tidak ada dokumen ditemukan</div>
+                                                    @else
+                                                        @foreach($dokumens as $d)
+                                                            <div wire:click="$set('selectedDokumenId', {{ $d->id }}); openDok = false" 
+                                                                 style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f8fafc; transition:background 0.2s; {{ $selectedDokumenId === $d->id ? 'background: var(--primary-light);' : '' }}" 
+                                                                 onmouseover="this.style.background='#f8fafc'" 
+                                                                 onmouseout="this.style.background='{{ $selectedDokumenId === $d->id ? 'var(--primary-light)' : 'transparent' }}'">
+                                                                <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">{{ $d->judul }}</div>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @error('selectedDokumenId') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
+                                    @endif
+                                </div>
+                            @endif
                         @endif
                     </div>
 
