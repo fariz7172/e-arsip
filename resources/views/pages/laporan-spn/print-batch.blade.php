@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Laporan SPN - {{ $payment->no_spm ?? 'Dokumen' }}</title>
+    <title>Cetak Massal Laporan SPN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -59,7 +59,7 @@
         }
     </style>
 </head>
-<body class="antialiased text-slate-800" x-data="spnComponent()">
+<body class="antialiased text-slate-800">
 
     <!-- Print Toolbar -->
     <div class="print-toolbar">
@@ -71,17 +71,11 @@
             <div class="h-6 w-[1px] bg-slate-300"></div>
             <div>
                 <h1 class="font-bold text-slate-800 leading-tight">Laporan SPN (Daftar Isi Berkas)</h1>
-                <p class="text-xs text-slate-500 font-medium">Payment ID: {{ $payment->id }} | No. SPM: {{ $payment->no_spm ?? '-' }}</p>
+                <p class="text-xs text-slate-500 font-medium">Batch Print ({{ count($payments) }} Dokumen)</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <button @click="saveData()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md font-medium transition-colors shadow-sm" :class="{ 'opacity-75 cursor-wait': isSaving }">
-                <template x-if="!isSaving"><i data-lucide="save" class="w-4 h-4"></i></template>
-                <template x-if="isSaving">
-                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                </template>
-                <span x-text="isSaving ? 'Menyimpan...' : 'Simpan Data'"></span>
-            </button>
+            <!-- Tombol Simpan disembunyikan pada Batch Print -->
             <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium transition-colors shadow-sm">
                 <i data-lucide="printer" class="w-4 h-4"></i>
                 <span>Cetak A4</span>
@@ -91,7 +85,7 @@
 
     <!-- Print Canvas -->
     <div class="print-container relative">
-
+        @foreach($payments as $payment)
         @if($payment->bundle)
             <!-- Bundle Link Banner (Floating on right side for desktop) -->
             <div class="print:hidden fixed top-24 right-8 z-40 bg-white/95 backdrop-blur border border-indigo-100 shadow-xl rounded-xl p-4 w-72 transition-all hover:shadow-2xl">
@@ -112,7 +106,7 @@
         @endif
 
         <!-- PAGE: LAPORAN SPN (DAFTAR ISI BERKAS) -->
-        <div class="print-area font-serif page-no-override" id="spn-content">
+        <div class="print-area font-serif page-no-override" id="spn-content-{{ $payment->id }}" x-data="spnComponent{{ $payment->id }}()">
             <!-- Kop Surat -->
             <div class="flex items-center border-b-[3px] border-black pb-2 mb-6 text-center relative">
                 <div class="w-[110px] pr-4"><img src="{{ asset('assets/logo.png') }}" class="w-full"></div>
@@ -156,24 +150,24 @@
                 <tbody>
                     <template x-for="(item, index) in checklistSPN" :key="index">
                         <tr class="group transition-colors" :class="item.is_uploaded ? 'bg-emerald-50/60' : ''">
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.no_berkas" @blur="item.no_berkas = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.no_item" @blur="item.no_item = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.kode" @blur="item.kode = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 leading-tight outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.uraian" @blur="item.uraian = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.tanggal" @blur="item.tanggal = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.jumlah" @blur="item.jumlah = $el.innerText; savePrint()"></td>
-                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.keterangan" @blur="item.keterangan = $el.innerText; savePrint()"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.no_berkas" @blur="item.no_berkas = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.no_item" @blur="item.no_item = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.kode" @blur="item.kode = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 leading-tight outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.uraian" @blur="item.uraian = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.tanggal" @blur="item.tanggal = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.jumlah" @blur="item.jumlah = $el.innerText"></td>
+                            <td class="border border-black px-2 py-1 text-center outline-none focus:bg-yellow-50" contenteditable="true" x-text="item.keterangan" @blur="item.keterangan = $el.innerText"></td>
                             
                             <!-- Checkbox Kelengkapan (Hanya Tampil di Web) -->
                             <td class="border border-black px-1 py-1 text-center print:hidden align-middle">
                                 <label class="flex items-center justify-center w-full h-full cursor-pointer">
-                                    <input type="checkbox" x-model="item.is_uploaded" @change="savePrint()" class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer">
+                                    <input type="checkbox" x-model="item.is_uploaded" class="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer">
                                 </label>
                             </td>
 
                             <!-- Aksi Hapus (Hanya Tampil di Web) -->
                             <td class="border border-black px-1 py-1 text-center print:hidden align-middle">
-                                <button @click="checklistSPN.splice(index, 1); savePrint()" class="text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 mx-auto" title="Hapus Baris">
+                                <button @click="checklistSPN.splice(index, 1)" class="text-red-400 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 mx-auto" title="Hapus Baris">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                 </button>
                             </td>
@@ -197,13 +191,14 @@
                 </button>
             </div>
         </div>
+        @endforeach
 
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('spnComponent', () => ({
-                isSaving: false,
+            @foreach($payments as $payment)
+            Alpine.data('spnComponent{{ $payment->id }}', () => ({
                 checklistSPN: @json($payment->print_data['checklistSPN'] ?? null) || [
                     { "no_berkas": "1", "no_item": "1", "kode": "/ PN.01.02", "uraian": "Surat Perintah Kerja kegiatan pengelolaan sda dan bangunan pengaman Pantai pada Wilayah Sungai Lintas Daerah Kabupaten/Kota ( {{ $payment->vendor?->nama_perusahaan ?? '...' }} )", "tanggal": "{{ $payment->tgl_spm ?? '...' }}", "jumlah": "1", "keterangan": "Berkas" },
                     { "no_berkas": "", "no_item": "2", "kode": "/ PN.01.02", "uraian": "Surat Pesanan Pek. {{ $payment->keperluan ?? '...' }}", "tanggal": "{{ $payment->tgl_spm ?? '...' }}", "jumlah": "1", "keterangan": "Berkas" },
@@ -241,56 +236,21 @@
                     { "no_berkas": "", "no_item": "34", "kode": " - ", "uraian": "Company Profile", "tanggal": "", "jumlah": "1", "keterangan": "Berkas" },
                   ],
                 
-                // Helper to collect all contenteditable data just before save
-                collectManualEdits() {
-                    let savedContentData = @json($payment->print_data['savedContentData'] ?? new stdClass());
-                    document.querySelectorAll('[data-eid]').forEach(el => {
-                        savedContentData[el.getAttribute('data-eid')] = el.innerText;
-                    });
-                    return savedContentData;
-                },
-
-                async saveData() {
-                    this.isSaving = true;
-                    try {
-                        let currentPrintData = @json($payment->print_data ?? []);
-                        let savedContentData = this.collectManualEdits();
-                        
-                        let response = await fetch('{{ route('payments.save-print', $payment->id) }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                print_data: {
-                                    ...currentPrintData,
-                                    savedContentData: savedContentData,
-                                    checklistSPN: this.checklistSPN
-                                }
-                            })
-                        });
-                        let result = await response.json();
-                        if(result.success) {
-                            alert('Data Laporan SPN berhasil disimpan permanen!');
-                        }
-                    } catch(e) {
-                        alert('Gagal menyimpan data.');
-                    } finally {
-                        this.isSaving = false;
-                    }
-                },
                 init() {
                     // Populate saved contenteditables on load
                     let savedContentData = @json($payment->print_data['savedContentData'] ?? new stdClass());
-                    document.querySelectorAll('[data-eid]').forEach(el => {
-                        let eid = el.getAttribute('data-eid');
-                        if (savedContentData[eid] !== undefined) {
-                            el.innerText = savedContentData[eid];
-                        }
-                    });
+                    let container = document.getElementById('spn-content-{{ $payment->id }}');
+                    if (container) {
+                        container.querySelectorAll('[data-eid]').forEach(el => {
+                            let eid = el.getAttribute('data-eid');
+                            if (savedContentData[eid] !== undefined) {
+                                el.innerText = savedContentData[eid];
+                            }
+                        });
+                    }
                 }
             }));
+            @endforeach
         });
         
         lucide.createIcons();

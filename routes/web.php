@@ -61,6 +61,9 @@ Route::middleware('auth')->group(function () {
 
     // Laporan SPN
     Volt::route('/laporan-spn', 'laporan-spn.index')->name('laporan-spn.index');
+    Route::get('/laporan-spn/print-batch', [\App\Http\Controllers\PaymentController::class, 'printSpnBatch'])->name('laporan-spn.print-batch');
+    Route::get('/laporan-spn/print-arsip', [\App\Http\Controllers\PaymentController::class, 'printArsip'])->name('laporan-spn.print-arsip');
+    Route::post('/laporan-spn/print-arsip/save', [\App\Http\Controllers\PaymentController::class, 'saveArsipBatch'])->name('laporan-spn.print-arsip.save');
     Route::get('/laporan-spn/{payment}/print', [\App\Http\Controllers\PaymentController::class, 'printSpn'])->name('laporan-spn.print');
 
     // PDF to Image Converter
@@ -82,26 +85,57 @@ Route::middleware('auth')->group(function () {
     Volt::route('/surat-keluar/{id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
 });
 
-// API Endpoint (Publik/External) untuk Aplikasi Lain Menerima Data Reses
-Route::get('/api/reses', function (\Illuminate\Http\Request $request) {
-    $query = \App\Models\SuratMasuk::with('bundle', 'dokumen.fileAttachments')
-        ->where('is_reses', true);
+// API Endpoint (Secured via api.token middleware)
+Route::prefix('api')->middleware('api.token')->group(function () {
+    
+    Route::get('/reses', function (\Illuminate\Http\Request $request) {
+        $query = \App\Models\SuratMasuk::with('bundle', 'dokumen.fileAttachments')
+            ->where('is_reses', true);
 
-    if ($request->has('search')) {
-        $search = $request->get('search');
-        $query->where(function ($q) use ($search) {
-            $q->where('no_surat', 'like', "%{$search}%")
-              ->orWhere('perihal', 'like', "%{$search}%")
-              ->orWhere('asal_surat', 'like', "%{$search}%");
-        });
-    }
+        if ($request->has('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('no_surat', 'like', "%{$search}%")
+                  ->orWhere('perihal', 'like', "%{$search}%")
+                  ->orWhere('asal_surat', 'like', "%{$search}%");
+            });
+        }
 
-    $reses = $query->orderBy('tanggal', 'desc')->get();
+        $reses = $query->orderBy('tanggal', 'desc')->get();
 
-    return response()->json([
-        'status' => 'success',
-        'total' => $reses->count(),
-        'data' => $reses
-    ]);
+        return response()->json([
+            'status' => 'success',
+            'total' => $reses->count(),
+            'data' => $reses
+        ]);
+    });
+
+    Route::get('/surat-masuk', function () {
+        $data = \App\Models\SuratMasuk::with('bundle', 'dokumen.fileAttachments')->orderBy('tanggal', 'desc')->get();
+        return response()->json([
+            'status' => 'success',
+            'total' => $data->count(),
+            'data' => $data
+        ]);
+    });
+
+    Route::get('/surat-keluar', function () {
+        $data = \App\Models\SuratKeluar::with('bundle', 'dokumen.fileAttachments')->orderBy('tanggal', 'desc')->get();
+        return response()->json([
+            'status' => 'success',
+            'total' => $data->count(),
+            'data' => $data
+        ]);
+    });
+
+    Route::get('/pekerjaan-sda/map', function () {
+        $data = \App\Models\Payment::all();
+        return response()->json([
+            'status' => 'success',
+            'total' => $data->count(),
+            'data' => $data
+        ]);
+    });
+
 });
 

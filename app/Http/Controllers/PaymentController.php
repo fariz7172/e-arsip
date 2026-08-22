@@ -112,6 +112,81 @@ class PaymentController extends Controller
     }
 
     /**
+     * Show the batch SPN print view.
+     */
+    public function printSpnBatch(Request $request)
+    {
+        $ids = explode(',', $request->query('ids', ''));
+        $ids = array_filter(array_map('trim', $ids));
+        
+        if (empty($ids)) {
+            return back()->with('error', 'Tidak ada data yang dipilih untuk dicetak.');
+        }
+
+        $payments = Payment::whereIn('id', $ids)->get();
+
+        if ($payments->isEmpty()) {
+            return back()->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        return view('pages.laporan-spn.print-batch', compact('payments'));
+    }
+
+    /**
+     * Show the Arsip list print view.
+     */
+    public function printArsip(Request $request)
+    {
+        $ids = explode(',', $request->query('ids', ''));
+        $ids = array_filter(array_map('trim', $ids));
+        
+        if (empty($ids)) {
+            return back()->with('error', 'Tidak ada data yang dipilih untuk dicetak.');
+        }
+
+        $payments = Payment::whereIn('id', $ids)->get();
+
+        if ($payments->isEmpty()) {
+            return back()->with('error', 'Data pembayaran tidak ditemukan.');
+        }
+
+        $signature = [];
+        if (\Storage::disk('local')->exists('arsip_signature.json')) {
+            $signature = json_decode(\Storage::disk('local')->get('arsip_signature.json'), true) ?? [];
+        }
+
+        return view('pages.laporan-spn.print-arsip', compact('payments', 'signature'));
+    }
+
+    /**
+     * Save Arsip list print layout data.
+     */
+    public function saveArsipBatch(Request $request)
+    {
+        $request->validate([
+            'signature' => 'nullable|array',
+            'rows' => 'nullable|array'
+        ]);
+
+        if ($request->has('signature')) {
+            \Storage::disk('local')->put('arsip_signature.json', json_encode($request->signature));
+        }
+
+        if ($request->has('rows')) {
+            foreach ($request->rows as $id => $rowData) {
+                $payment = Payment::find($id);
+                if ($payment) {
+                    $pd = $payment->print_data ?? [];
+                    $pd['arsip_row'] = $rowData;
+                    $payment->update(['print_data' => $pd]);
+                }
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'Data Daftar Arsip berhasil disimpan.']);
+    }
+
+    /**
      * Save print layout data (checklists, text inputs).
      */
     public function savePrint(Request $request, Payment $payment)

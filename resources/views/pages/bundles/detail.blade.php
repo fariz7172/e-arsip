@@ -422,7 +422,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                             <div class="flex-1 overflow-y-auto p-8 custom-scrollbar" style="padding: 32px; overflow-y: auto; flex: 1;">
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
                                                     
-                                                    @php $payment = $bundle->payments->first(); @endphp
+                                                    @php $payment = $bundle->payments->where('dokumen_id', $dokumen->id)->first(); @endphp
                                                     @if($payment)
                                                     <!-- Section I: Anggaran -->
                                                     <div class="space-y-4" style="display: flex; flex-direction: column; gap: 16px;">
