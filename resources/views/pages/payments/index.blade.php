@@ -88,7 +88,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             ]);
             $bundle = Bundle::create([
                 'nama' => $this->newBundleNama,
-                'kode' => $this->newBundleKode,
+                'kode' => $this->newBundleKode ?: 'BDL-' . ($this->newBundleTahun ?: date('Y')) . '-' . strtoupper(\Illuminate\Support\Str::random(5)),
                 'tahun' => $this->newBundleTahun,
                 'created_by' => auth()->id()
             ]);
@@ -538,4 +538,5 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         </div>
     @endif
 </div>
+
 
