@@ -6,6 +6,7 @@
     <title>Cetak Daftar Arsip</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         body { background: #f1f5f9; }
         .print-toolbar {
