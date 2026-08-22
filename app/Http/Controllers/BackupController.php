@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use phpseclib3\Net\SFTP;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class BackupController extends Controller
 {
@@ -15,53 +15,75 @@ class BackupController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $host = env('DEPLOY_SSH_HOST');
-        $port = env('DEPLOY_SSH_PORT', 65002);
-        $username = env('DEPLOY_SSH_USER');
-        $password = env('DEPLOY_SSH_PASS');
-        $dir = env('DEPLOY_SSH_DIR');
-
-        $dbUser = 'u674511048_arsip';
-        $dbPass = '!FarizAhmad123456';
-        $dbName = 'u674511048_arsip';
-
-        if (!$host || !$username || !$password || !$dir) {
-            return back()->with('error', 'Kredensial SSH di file .env tidak lengkap.');
-        }
-
         try {
-            $sftp = new SFTP($host, $port);
-            if (!$sftp->login($username, $password)) {
-                return back()->with('error', 'Gagal login SSH ke server.');
-            }
+            $dbName = env('DB_DATABASE');
+            $dbUser = env('DB_USERNAME');
+            $dbPass = env('DB_PASSWORD');
+            $dbHost = env('DB_HOST', '127.0.0.1');
 
             $date = date('Y-m-d_H-i-s');
-            $filename = "backup_server_{$date}.sql";
-            
-            // Execute mysqldump remotely
-            $dumpCmd = "cd $dir && mysqldump -u $dbUser -p'$dbPass' $dbName > $filename 2>&1";
-            $output = $sftp->exec($dumpCmd);
+            $filename = "backup_database_{$date}.sql";
+            $localPath = storage_path('app/public/' . $filename);
 
-            if (stripos($output, 'error') !== false || stripos($output, 'denied') !== false || stripos($output, 'command not found') !== false) {
-                $sftp->delete($dir . '/' . $filename);
-                Log::error('Backup DB Error: ' . $output);
-                return back()->with('error', 'Terjadi kesalahan saat mem-backup di server: ' . substr($output, 0, 100));
+            // Execute mysqldump locally on the server (bypassing SSH entirely)
+            // Adding --no-tablespaces to avoid privileges error on shared hosting
+            $dumpCmd = "mysqldump --no-tablespaces -h {$dbHost} -u {$dbUser} -p'{$dbPass}' {$dbName} > " . escapeshellarg($localPath) . " 2>&1";
+            
+            exec($dumpCmd, $output, $returnVar);
+
+            if ($returnVar !== 0) {
+                Log::error('Backup DB Error: ' . implode("\n", $output));
+                
+                // Fallback: If mysqldump fails (e.g. not found or no permission), use pure PHP backup
+                $this->purePhpBackup($localPath);
             }
 
-            $localPath = storage_path('app/public/' . $filename);
-            if ($sftp->get($dir . '/' . $filename, $localPath)) {
-                // Hapus file di server Hostinger
-                $sftp->delete($dir . '/' . $filename);
-
-                // Kirim file ke browser, setelah selesai download, hapus file lokal
+            if (file_exists($localPath) && filesize($localPath) > 0) {
                 return response()->download($localPath)->deleteFileAfterSend(true);
             }
 
-            return back()->with('error', 'Gagal mengunduh file backup dari server.');
+            return back()->with('error', 'Gagal membuat file backup (File kosong atau tidak ada).');
 
         } catch (\Exception $e) {
             Log::error('Backup Exception: ' . $e->getMessage());
-            return back()->with('error', 'Koneksi ke server gagal: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mem-backup database: ' . $e->getMessage());
         }
+    }
+
+    private function purePhpBackup($filePath)
+    {
+        $tables = DB::select('SHOW TABLES');
+        $dbName = env('DB_DATABASE');
+        $property = 'Tables_in_' . $dbName;
+        
+        $sql = "-- Database Backup\n-- Generated on: " . date('Y-m-d H:i:s') . "\n\n";
+        
+        foreach ($tables as $table) {
+            $tableName = $table->$property;
+            
+            // Get Create Table statement
+            $createTable = DB::select("SHOW CREATE TABLE `$tableName`");
+            $sql .= "\n\nDROP TABLE IF EXISTS `$tableName`;\n";
+            $sql .= $createTable[0]->{'Create Table'} . ";\n\n";
+            
+            // Get data
+            $rows = DB::table($tableName)->get();
+            foreach ($rows as $row) {
+                $sql .= "INSERT INTO `$tableName` VALUES(";
+                $values = [];
+                foreach ($row as $val) {
+                    if (is_null($val)) {
+                        $values[] = "NULL";
+                    } else {
+                        // Escape quotes and backslashes properly
+                        $val = str_replace(['\\', "'"], ['\\\\', "''"], $val);
+                        $values[] = "'" . $val . "'";
+                    }
+                }
+                $sql .= implode(", ", $values) . ");\n";
+            }
+        }
+        
+        file_put_contents($filePath, $sql);
     }
 }
