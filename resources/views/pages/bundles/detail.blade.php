@@ -544,9 +544,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                                                         <p class="text-sm font-black text-slate-700" style="font-size: 0.875rem; font-weight: 900; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $file->nama_file }}">{{ $file->nama_file }}</p>
                                                                         <div style="display: flex; gap: 8px; margin-top: auto;">
                                                                             @if($file->is_image || $file->is_pdf)
-                                                                                <a href="{{ route('file.preview', $file->id) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">Lihat</a>
+                                                                                <a href="{{ route('file.preview', \Illuminate\Support\Facades\Crypt::encryptString($file->id)) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">Lihat</a>
                                                                             @endif
-                                                                            <a href="{{ route('file.download', $file->id) }}" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">Unduh</a>
+                                                                            <a href="{{ route('file.download', \Illuminate\Support\Facades\Crypt::encryptString($file->id)) }}" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">Unduh</a>
                                                                         </div>
                                                                     </div>
                                                                 @endforeach
@@ -611,7 +611,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div class="dokumen-grid">
                     @foreach($filteredSuratMasuk as $surat)
                         <div class="dokumen-card">
-                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-masuk/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
+                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . \Illuminate\Support\Facades\Crypt::encryptString($surat->dokumen_id) : '/surat-masuk/' . \Illuminate\Support\Facades\Crypt::encryptString($surat->id) . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
                                 <div class="dokumen-card-meta">
                                     <span>📋 {{ $surat->no_surat ?? '-' }}</span>
@@ -656,7 +656,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div class="dokumen-grid">
                     @foreach($filteredSuratKeluar as $surat)
                         <div class="dokumen-card">
-                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . $surat->dokumen_id : '/surat-keluar/' . $surat->id . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
+                            <a href="{{ $surat->dokumen_id ? '/dokumen/' . \Illuminate\Support\Facades\Crypt::encryptString($surat->dokumen_id) : '/surat-keluar/' . \Illuminate\Support\Facades\Crypt::encryptString($surat->id) . '/edit' }}" style="text-decoration: none; color: inherit; display: block;">
                                 <div class="dokumen-card-title">{{ $surat->perihal ?? 'Tanpa Perihal' }}</div>
                                 <div class="dokumen-card-meta">
                                     <span>📋 {{ $surat->no_surat ?? '-' }}</span>

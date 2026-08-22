@@ -81,10 +81,15 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
         }
     }
 
-    public function mount($id = null)
+    public function mount($encrypted_id = null)
     {
-        if ($id) {
-            $this->surat = SuratMasuk::findOrFail($id);
+        if ($encrypted_id) {
+            try {
+                $id = \Illuminate\Support\Facades\Crypt::decryptString($encrypted_id);
+                $this->surat = SuratMasuk::findOrFail($id);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                abort(403, 'Invalid or corrupted link.');
+            }
             $this->no_urut = $this->surat->no_urut;
             $this->kode = $this->surat->kode;
             $this->tanggal = $this->surat->tanggal;

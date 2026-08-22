@@ -56,4 +56,17 @@ class Dokumen extends Model
     {
         return $this->kategori?->bundle;
     }
+
+    /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        try {
+            $id = \Illuminate\Support\Facades\Crypt::decryptString($value);
+            return $this->where($field ?? $this->getRouteKeyName(), $id)->firstOrFail();
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            abort(403, 'Invalid or corrupted link.');
+        }
+    }
 }

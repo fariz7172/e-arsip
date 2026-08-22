@@ -28,6 +28,9 @@ Route::post('/logout', function () {
 
 // Protected routes
 Route::middleware('auth')->group(function () {
+    // Backup Database
+    Route::middleware('role:superadmin,admin')->get('/backup-database', [\App\Http\Controllers\BackupController::class, 'downloadServerBackup'])->name('backup.database');
+
     // Dashboard
     Volt::route('/dashboard', 'dashboard')->name('dashboard');
 
@@ -49,13 +52,13 @@ Route::middleware('auth')->group(function () {
     Volt::route('/pencarian', 'pencarian')->name('pencarian');
 
     // File download & preview (protected)
-    Route::get('/file/{file}/download', [FileController::class, 'download'])->name('file.download');
-    Route::get('/file/{file}/preview', [FileController::class, 'preview'])->name('file.preview');
+    Route::get('/file/{encrypted_id}/download', [FileController::class, 'download'])->name('file.download');
+    Route::get('/file/{encrypted_id}/preview', [FileController::class, 'preview'])->name('file.preview');
 
     // Payments API Sync & Print
     Volt::route('/payments', 'payments.index')->name('payments.index');
-    Route::post('/payments/sync/{id}', [\App\Http\Controllers\PaymentController::class, 'sync'])->name('payments.sync');
-    Route::post('/payments/sync-batch', [\App\Http\Controllers\PaymentController::class, 'syncBatch'])->name('payments.sync-batch');
+    Route::middleware('role:superadmin,admin')->post('/payments/sync/{id}', [\App\Http\Controllers\PaymentController::class, 'sync'])->name('payments.sync');
+    Route::middleware('role:superadmin,admin')->post('/payments/sync-batch', [\App\Http\Controllers\PaymentController::class, 'syncBatch'])->name('payments.sync-batch');
     Route::get('/payments/{payment}/print', [\App\Http\Controllers\PaymentController::class, 'print'])->name('payments.print');
     Route::post('/payments/{payment}/save-print', [\App\Http\Controllers\PaymentController::class, 'savePrint'])->name('payments.save-print');
 
@@ -71,22 +74,22 @@ Route::middleware('auth')->group(function () {
     Volt::route('/pdf-compressor', 'pdf-compressor')->name('pdf-compressor');
     // Buku Agenda - Surat Masuk
     Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
-    Route::get('/surat-masuk/export', [\App\Http\Controllers\SuratMasukExcelController::class, 'export'])->name('surat-masuk.export');
-    Route::post('/surat-masuk/import', [\App\Http\Controllers\SuratMasukExcelController::class, 'import'])->name('surat-masuk.import');
+    Route::middleware('role:superadmin,admin')->get('/surat-masuk/export', [\App\Http\Controllers\SuratMasukExcelController::class, 'export'])->name('surat-masuk.export');
+    Route::middleware('role:superadmin,admin')->post('/surat-masuk/import', [\App\Http\Controllers\SuratMasukExcelController::class, 'import'])->name('surat-masuk.import');
     Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
-    Volt::route('/surat-masuk/{id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
-    Volt::route('/surat-masuk/{id}/disposisi', 'surat-masuk.disposisi')->name('surat-masuk.disposisi');
+    Volt::route('/surat-masuk/{encrypted_id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
+    Volt::route('/surat-masuk/{encrypted_id}/disposisi', 'surat-masuk.disposisi')->name('surat-masuk.disposisi');
 
     // Buku Agenda - Surat Keluar
     Volt::route('/surat-keluar', 'surat-keluar.index')->name('surat-keluar.index');
-    Route::get('/surat-keluar/export', [\App\Http\Controllers\SuratKeluarExcelController::class, 'export'])->name('surat-keluar.export');
-    Route::post('/surat-keluar/import', [\App\Http\Controllers\SuratKeluarExcelController::class, 'import'])->name('surat-keluar.import');
+    Route::middleware('role:superadmin,admin')->get('/surat-keluar/export', [\App\Http\Controllers\SuratKeluarExcelController::class, 'export'])->name('surat-keluar.export');
+    Route::middleware('role:superadmin,admin')->post('/surat-keluar/import', [\App\Http\Controllers\SuratKeluarExcelController::class, 'import'])->name('surat-keluar.import');
     Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
-    Volt::route('/surat-keluar/{id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
+    Volt::route('/surat-keluar/{encrypted_id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
 });
 
 // API Endpoint (Secured via api.token middleware)
-Route::prefix('api')->middleware('api.token')->group(function () {
+Route::prefix('api')->middleware('auth:sanctum')->group(function () {
     
     Route::get('/reses', function (\Illuminate\Http\Request $request) {
         $query = \App\Models\SuratMasuk::with('bundle', 'dokumen.fileAttachments')

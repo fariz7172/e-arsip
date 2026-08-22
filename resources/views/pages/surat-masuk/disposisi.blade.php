@@ -6,9 +6,14 @@ use App\Models\SuratMasuk;
 new #[\Livewire\Attributes\Layout('layouts.print')] class extends Component {
     public SuratMasuk $surat;
 
-    public function mount($id)
+    public function mount($encrypted_id)
     {
-        $this->surat = SuratMasuk::findOrFail($id);
+        try {
+            $id = \Illuminate\Support\Facades\Crypt::decryptString($encrypted_id);
+            $this->surat = SuratMasuk::findOrFail($id);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            abort(403, 'Invalid or corrupted link.');
+        }
     }
 }; ?>
 <div>

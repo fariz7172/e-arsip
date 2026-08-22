@@ -119,7 +119,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 </td>
                                 <td style="font-weight: 600; color:var(--text-secondary);">#{{ $payment->id }}</td>
                                 <td>
-                                    <a href="{{ route('payments.print', $payment->id) }}" style="font-weight: 600; color:var(--primary); text-decoration: none; cursor: pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                                    <a href="{{ route('payments.print', \Illuminate\Support\Facades\Crypt::encryptString($payment->id)) }}" style="font-weight: 600; color:var(--primary); text-decoration: none; cursor: pointer;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
                                         {{ $payment->no_spm ?? '-' }}
                                     </a>
                                     <div style="font-size:0.8rem; color:var(--text-muted);">{{ $payment->tgl_spm ? \Carbon\Carbon::parse($payment->tgl_spm)->format('d/m/Y') : '-' }}</div>
@@ -133,14 +133,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                         {{ $payment->keperluan }}
                                     </div>
                                     @if($payment->bundle && $payment->dokumen_id)
-                                        <a href="{{ route('dokumen.show', $payment->dokumen_id) }}" style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='var(--primary-light)'; this.style.color='var(--primary)';">
+                                        <a href="{{ route('dokumen.show', \Illuminate\Support\Facades\Crypt::encryptString($payment->dokumen_id)) }}" style="margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: 0.2s;" onmouseover="this.style.background='var(--primary)'; this.style.color='white';" onmouseout="this.style.background='var(--primary-light)'; this.style.color='var(--primary)';">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                                             Lihat File di: {{ $payment->bundle->kode ?? $payment->bundle->nama }}
                                         </a>
                                     @endif
                                 </td>
                                 <td style="text-align:center;">
-                                    <a href="{{ route('laporan-spn.print', $payment->id) }}" target="_blank" class="btn btn-primary btn-sm" style="background:var(--primary); color:white; display:inline-flex; align-items:center; gap:6px;">
+                                    <a href="{{ route('laporan-spn.print', \Illuminate\Support\Facades\Crypt::encryptString($payment->id)) }}" target="_blank" class="btn btn-primary btn-sm" style="background:var(--primary); color:white; display:inline-flex; align-items:center; gap:6px;">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
                                         Cetak Laporan 
                                     </a>

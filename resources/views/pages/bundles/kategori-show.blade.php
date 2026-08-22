@@ -399,7 +399,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     <!-- File chips -->
                     <div class="file-chips">
                         @foreach($dokumen->fileAttachments as $file)
-                            <a href="{{ route('file.preview', $file) }}" target="_blank" class="file-chip">
+                            <a href="{{ route('file.preview', \Illuminate\Support\Facades\Crypt::encryptString($file->id)) }}" target="_blank" class="file-chip">
                                 @if($file->is_image)
                                     🖼️
                                 @elseif($file->is_pdf)

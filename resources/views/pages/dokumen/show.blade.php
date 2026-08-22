@@ -122,7 +122,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 </div>
             </div>
             <div>
-                <a href="{{ route('dokumen.print', $dokumen) }}" target="_blank" class="btn btn-secondary">
+                <a href="{{ route('dokumen.print', \Illuminate\Support\Facades\Crypt::encryptString($dokumen->id)) }}" target="_blank" class="btn btn-secondary">
                     🖨️ Cetak
                 </a>
             </div>
@@ -423,10 +423,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                 🌐 Tautan Drive
                             </a>
                         @else
-                            <a href="{{ route('file.preview', $file) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">
+                            <a href="{{ route('file.preview', \Illuminate\Support\Facades\Crypt::encryptString($file->id)) }}" target="_blank" class="btn btn-sm btn-secondary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">
                                 👁️ Lihat
                             </a>
-                            <a href="{{ route('file.download', $file) }}" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">
+                            <a href="{{ route('file.download', \Illuminate\Support\Facades\Crypt::encryptString($file->id)) }}" class="btn btn-sm btn-primary" style="flex: 1; text-align: center; padding: 6px; font-size: 0.75rem;">
                                 ⬇️ Unduh
                             </a>
                         @endif

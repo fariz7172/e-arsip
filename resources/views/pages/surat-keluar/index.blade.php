@@ -155,7 +155,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                         @php
                                             $attachCount = $surat->dokumen ? $surat->dokumen->fileAttachments->count() : 0;
                                         @endphp
-                                        <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" title="Lihat Dokumen & Upload File" style="display:inline-flex; align-items:center; justify-content:center; gap: 4px; padding: 4px 10px; border-radius: 6px; text-decoration:none; font-weight:600; {{ $attachCount > 0 ? 'background: #d1fae5; color: #10b981;' : 'background: #fef2f2; color: #ef4444;' }}">
+                                        <a href="{{ route('dokumen.show', \Illuminate\Support\Facades\Crypt::encryptString($surat->dokumen_id)) }}" title="Lihat Dokumen & Upload File" style="display:inline-flex; align-items:center; justify-content:center; gap: 4px; padding: 4px 10px; border-radius: 6px; text-decoration:none; font-weight:600; {{ $attachCount > 0 ? 'background: #d1fae5; color: #10b981;' : 'background: #fef2f2; color: #ef4444;' }}">
                                             <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
                                             @if($attachCount > 0)
                                                 <span style="font-size: 0.75rem;">{{ $attachCount }}</span>
@@ -168,11 +168,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                                 <td style="text-align: center;">
                                     <div style="display: flex; gap: 6px; justify-content: center;">
                                         @if($surat->dokumen_id)
-                                            <a href="{{ route('dokumen.show', $surat->dokumen_id) }}" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: #10b981;" title="Detail Dokumen">
+                                            <a href="{{ route('dokumen.show', \Illuminate\Support\Facades\Crypt::encryptString($surat->dokumen_id)) }}" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: #10b981;" title="Detail Dokumen">
                                                 👁️
                                             </a>
                                         @endif
-                                        <a href="/surat-keluar/{{ $surat->id }}/edit" class="btn btn-sm btn-secondary" style="padding: 4px 8px;" title="Edit">
+                                        <a href="/surat-keluar/{{ \Illuminate\Support\Facades\Crypt::encryptString($surat->id) }}/edit" class="btn btn-sm btn-secondary" style="padding: 4px 8px;" title="Edit">
                                             ✏️
                                         </a>
                                         <button wire:click="delete({{ $surat->id }})" wire:confirm="Yakin ingin menghapus data surat ini?" class="btn btn-sm btn-secondary" style="padding: 4px 8px; color: var(--danger);" title="Hapus">

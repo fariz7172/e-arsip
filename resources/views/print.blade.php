@@ -169,7 +169,7 @@
     async saveData() {
         this.isSaving = true;
         try {
-            let response = await fetch('{{ route('payments.save-print', $payment->id) }}', {
+            let response = await fetch('{{ route('payments.save-print', \Illuminate\Support\Facades\Crypt::encryptString($payment->id)) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

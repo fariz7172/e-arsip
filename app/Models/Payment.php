@@ -37,4 +37,17 @@ class Payment extends Model
     {
         return $this->belongsTo(Bundle::class);
     }
+
+    /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        try {
+            $id = \Illuminate\Support\Facades\Crypt::decryptString($value);
+            return $this->where($field ?? $this->getRouteKeyName(), $id)->firstOrFail();
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            abort(403, 'Invalid or corrupted link.');
+        }
+    }
 }
