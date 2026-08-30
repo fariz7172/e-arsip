@@ -14,6 +14,18 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     #[Url]
     public $perPage = 10;
 
+    public $selectedSurat = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedSurat = $this->with()['surats']->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedSurat = [];
+        }
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -57,11 +69,18 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     <!-- Page Header -->
     <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
         <div>
-            <h1 style="font-size:1.75rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.03em; line-height:1.2;">Buku Agenda: Surat Keluar</h1>
+            <h1 style="font-size:1.75rem; font-weight:800; color:var(--text-primary); letter-spacing:-0.03em; line-height:1.2;">
+                Buku Agenda: Surat Keluar
+            </h1>
             <p style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">Kelola dan lacak riwayat pembuatan surat keluar serta persetujuannya.</p>
         </div>
         
         <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ route('surat-keluar.print-batch') }}{{ count($selectedSurat) > 0 ? '?ids='.implode(',', $selectedSurat) : '' }}" target="_blank" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #4f46e5;" title="Cetak Laporan">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+                {{ count($selectedSurat) > 0 ? 'Cetak (' . count($selectedSurat) . ')' : 'Cetak' }}
+            </a>
+
             <a href="{{ asset('assets/surat-keluar-template.xlsx') }}" download class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;" title="Download Template Excel">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Template
@@ -128,6 +147,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 <table style="min-width: 1400px;">
                     <thead>
                         <tr>
+                            <th style="width: 40px; text-align: center;">
+                                <input type="checkbox" wire:model.live="selectAll" style="cursor: pointer;">
+                            </th>
                             <th style="width: 60px; text-align: center;">No Urut</th>
                             <th style="width: 100px;">Tanggal</th>
                             <th style="width: 120px;">No. Surat</th>
@@ -141,7 +163,10 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     </thead>
                     <tbody>
                         @foreach($surats as $surat)
-                            <tr>
+                            <tr wire:key="surat-{{ $surat->id }}" class="{{ in_array($surat->id, $selectedSurat) ? 'bg-slate-50' : '' }}">
+                                <td style="text-align: center;">
+                                    <input type="checkbox" wire:model.live="selectedSurat" value="{{ $surat->id }}" style="cursor: pointer;">
+                                </td>
                                 <td style="text-align: center; font-weight: 700; color: var(--text-secondary);">{{ $surat->no_urut }}</td>
                                 <td>{{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</td>
                                 <td style="font-family: monospace; font-size: 0.85rem; font-weight: 600;">{{ $surat->no_surat ?? '-' }}</td>
