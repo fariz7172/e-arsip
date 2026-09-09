@@ -34,8 +34,44 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     public $dokumenOption = 'new'; // 'new' or 'existing'
     public $searchDokumen = '';
     public $selectedDokumenId = null;
-
     public $uploadedFiles = [];
+
+    // Hierarchical Budget State
+    public $selectedProgramId = null;
+    public $selectedKegiatanId = null;
+    public $selectedSubKegiatanId = null;
+    public $selectedAktivitasId = null;
+    public $selectedRekeningId = null;
+    public $useAnggaran = false;
+
+    public function updatedSelectedProgramId() {
+        $this->reset(['selectedKegiatanId', 'selectedSubKegiatanId', 'selectedAktivitasId', 'selectedRekeningId', 'selectedBundleId']);
+    }
+    public function updatedSelectedKegiatanId() {
+        $this->reset(['selectedSubKegiatanId', 'selectedAktivitasId', 'selectedRekeningId', 'selectedBundleId']);
+    }
+    public function updatedSelectedSubKegiatanId() {
+        $this->reset(['selectedAktivitasId', 'selectedRekeningId', 'selectedBundleId']);
+    }
+    public function updatedSelectedAktivitasId() {
+        $this->reset(['selectedRekeningId', 'selectedBundleId']);
+    }
+    public function updatedSelectedRekeningId() {
+        $this->reset(['selectedBundleId']);
+        if ($this->selectedRekeningId) {
+            $bundle = \App\Models\Bundle::where('anggaran_id', $this->selectedRekeningId)->first();
+            if ($bundle) {
+                $this->uploadOption = 'existing';
+                $this->selectedBundleId = $bundle->id;
+            }
+        }
+    }
+
+    public function updatedUseAnggaran() {
+        if ($this->useAnggaran) {
+            $this->uploadOption = 'existing';
+        }
+    }
 
     public function updatingSearch()
     {
@@ -52,21 +88,55 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         $this->selectedPaymentId = $paymentId;
         $this->showModal = true;
         
-        $payment = Payment::find($paymentId);
+        $payment = Payment::with('bundle.anggaran')->find($paymentId);
         if ($payment && $payment->bundle_id) {
             $this->uploadOption = 'existing';
             $this->selectedBundleId = $payment->bundle_id;
+            
+            // Auto select hierarki anggaran jika bundle punya anggaran
+            if ($payment->bundle && $payment->bundle->anggaran_id) {
+                $this->useAnggaran = true;
+                $rekening = $payment->bundle->anggaran;
+                if ($rekening && $rekening->tipe === 'rekening') {
+                    $this->selectedRekeningId = $rekening->id;
+                    $aktivitas = $rekening->parent;
+                    if ($aktivitas) {
+                        $this->selectedAktivitasId = $aktivitas->id;
+                        $sub = $aktivitas->parent;
+                        if ($sub) {
+                            $this->selectedSubKegiatanId = $sub->id;
+                            $kegiatan = $sub->parent;
+                            if ($kegiatan) {
+                                $this->selectedKegiatanId = $kegiatan->id;
+                                $program = $kegiatan->parent;
+                                if ($program) {
+                                    $this->selectedProgramId = $program->id;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                $this->useAnggaran = false;
+            }
         } else {
             $this->uploadOption = 'new';
             $this->newBundleTahun = date('Y');
             $this->newBundleNama = 'Berkas SPN ' . ($payment->no_spm ?? '');
+            $this->useAnggaran = false;
         }
     }
 
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 'newBundleNama', 'newBundleKode', 'newBundleTahun', 'uploadedFiles', 'dokumenOption', 'searchDokumen', 'selectedDokumenId']);
+        $this->reset([
+            'selectedPaymentId', 'uploadOption', 'searchBundle', 'selectedBundleId', 
+            'newBundleNama', 'newBundleKode', 'newBundleTahun', 'uploadedFiles', 
+            'dokumenOption', 'searchDokumen', 'selectedDokumenId',
+            'selectedProgramId', 'selectedKegiatanId', 'selectedSubKegiatanId', 
+            'selectedAktivitasId', 'selectedRekeningId', 'useAnggaran'
+        ]);
     }
 
     public function saveBundle()
@@ -82,11 +152,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             }
             $payment->update($updateData);
         } else {
-            $this->validate([
+            $rules = [
                 'newBundleNama' => 'required|string|max:255',
                 'newBundleTahun' => 'required|integer',
-            ]);
+            ];
+            if ($this->useAnggaran) {
+                $rules['selectedRekeningId'] = 'required';
+            }
+            $this->validate($rules, ['selectedRekeningId.required' => 'Pos Anggaran (Kode Rekening) harus dipilih sampai akhir.']);
+            
             $bundle = Bundle::create([
+                'anggaran_id' => $this->useAnggaran ? $this->selectedRekeningId : null,
                 'nama' => $this->newBundleNama,
                 'kode' => $this->newBundleKode ?: 'BDL-' . ($this->newBundleTahun ?: date('Y')) . '-' . strtoupper(\Illuminate\Support\Str::random(5)),
                 'tahun' => $this->newBundleTahun,
@@ -161,7 +237,13 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             });
         }
 
-        $bundleQuery = Bundle::select('id', 'nama', 'kode', 'tahun')->orderBy('created_at', 'desc');
+        $bundleQuery = Bundle::select('id', 'nama', 'kode', 'tahun', 'anggaran_id')->orderBy('created_at', 'desc');
+        
+        // Filter Bundle berdasarkan Rekening jika toggle hidup dan rekening dipilih
+        if ($this->useAnggaran && $this->selectedRekeningId) {
+            $bundleQuery->where('anggaran_id', $this->selectedRekeningId);
+        }
+
         if (!empty($this->searchBundle)) {
             $bundleQuery->where(function($q) {
                 $q->where('nama', 'like', '%' . $this->searchBundle . '%')
@@ -196,10 +278,22 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             }
         }
 
+        // Get Hierarchical Data
+        $programs = \App\Models\Anggaran::where('tipe', 'program')->orderBy('kode')->get();
+        $kegiatans = $this->selectedProgramId ? \App\Models\Anggaran::where('parent_id', $this->selectedProgramId)->orderBy('kode')->get() : [];
+        $subKegiatans = $this->selectedKegiatanId ? \App\Models\Anggaran::where('parent_id', $this->selectedKegiatanId)->orderBy('kode')->get() : [];
+        $aktivitas = $this->selectedSubKegiatanId ? \App\Models\Anggaran::where('parent_id', $this->selectedSubKegiatanId)->orderBy('kode')->get() : [];
+        $rekenings = $this->selectedAktivitasId ? \App\Models\Anggaran::where('parent_id', $this->selectedAktivitasId)->orderBy('kode')->get() : [];
+
         return [
             'payments' => $query->paginate($this->perPage),
             'bundles' => $bundles,
-            'dokumens' => $dokumens
+            'dokumens' => $dokumens,
+            'programs' => $programs,
+            'kegiatans' => $kegiatans,
+            'subKegiatans' => $subKegiatans,
+            'aktivitasData' => $aktivitas,
+            'rekenings' => $rekenings,
         ];
     }
 }; ?>
@@ -360,14 +454,99 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                         Pilih Bundle Arsip yang sudah ada, atau buat Bundle baru untuk menyimpan fisik dokumen pembayaran ini.
                     </p>
 
+                    <!-- Toggle Use Anggaran -->
+                    <div style="margin-bottom: 20px; padding: 12px 16px; background: var(--primary-light); border: 1px dashed var(--primary); border-radius: 8px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                            <input type="checkbox" wire:model.live="useAnggaran" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem;">Gunakan Klasifikasi Anggaran Berjenjang (Sub-Folder Anggaran)</span>
+                        </label>
+                        <p style="margin: 4px 0 0 24px; font-size: 0.8rem; color: var(--text-secondary);">Centang ini jika Anda ingin mengelompokkan dokumen ini berdasarkan hierarki Kode Rekening (Program &rarr; Kegiatan &rarr; Rincian).</p>
+                    </div>
+
+                    @if($useAnggaran)
+                    <!-- HIERARKI ANGGARAN -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                        <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Klasifikasi Anggaran (Folder)</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">1. Program</label>
+                                <select wire:model.live="selectedProgramId" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                                    <option value="">-- Pilih Program --</option>
+                                    @foreach($programs as $p)
+                                        <option value="{{ $p->id }}">{{ $p->kode }} - {{ $p->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            @if($selectedProgramId)
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">2. Kegiatan</label>
+                                <select wire:model.live="selectedKegiatanId" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                                    <option value="">-- Pilih Kegiatan --</option>
+                                    @foreach($kegiatans as $k)
+                                        <option value="{{ $k->id }}">{{ $k->kode }} - {{ $k->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+
+                            @if($selectedKegiatanId)
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">3. Sub Kegiatan</label>
+                                <select wire:model.live="selectedSubKegiatanId" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                                    <option value="">-- Pilih Sub Kegiatan --</option>
+                                    @foreach($subKegiatans as $sk)
+                                        <option value="{{ $sk->id }}">{{ $sk->kode }} - {{ $sk->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+
+                            @if($selectedSubKegiatanId)
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">4. Aktivitas</label>
+                                <select wire:model.live="selectedAktivitasId" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.85rem;">
+                                    <option value="">-- Pilih Aktivitas --</option>
+                                    @foreach($aktivitasData as $a)
+                                        <option value="{{ $a->id }}">{{ $a->kode }} - {{ $a->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+
+                            @if($selectedAktivitasId)
+                            <div>
+                                <label style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:4px; display:block;">5. Kode Rekening (Sub Folder Terakhir)</label>
+                                <select wire:model.live="selectedRekeningId" class="form-input" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--primary); background: var(--primary-light); font-size: 0.85rem; font-weight: 600;">
+                                    <option value="">-- Pilih Kode Rekening --</option>
+                                    @foreach($rekenings as $r)
+                                        <option value="{{ $r->id }}">{{ $r->kode }} - {{ $r->nama }}</option>
+                                    @endforeach
+                                </select>
+                                @error('selectedRekeningId') <div style="color:var(--danger); font-size:0.75rem; margin-top:4px; font-weight:600;">{{ $message }}</div> @enderror
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif <!-- End of useAnggaran -->
+
                     <!-- Option 1: Existing Bundle -->
-                    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid {{ $uploadOption === 'existing' ? 'var(--primary)' : 'var(--border-color)' }}; border-radius: 8px; background: {{ $uploadOption === 'existing' ? 'var(--primary-light)' : 'white' }}; transition: all 0.2s;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: {{ $uploadOption === 'existing' ? '12px' : '0' }};">
+                    <div style="margin-bottom: 16px; padding: 12px; border: 1px solid {{ ($uploadOption === 'existing' || $useAnggaran) ? 'var(--primary)' : 'var(--border-color)' }}; border-radius: 8px; background: {{ ($uploadOption === 'existing' || $useAnggaran) ? 'var(--primary-light)' : 'white' }}; transition: all 0.2s;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: {{ $useAnggaran ? 'default' : 'pointer' }}; margin-bottom: {{ ($uploadOption === 'existing' || $useAnggaran) ? '12px' : '0' }};">
+                            @if(!$useAnggaran)
                             <input type="radio" wire:model.live="uploadOption" value="existing" style="width: 16px; height: 16px; accent-color: var(--primary);">
-                            <span style="font-weight: 700; color: var(--text-primary);">Pilih Bundle Arsip Tersedia</span>
+                            @endif
+                            <span style="font-weight: 700; color: var(--text-primary);">
+                                @if($useAnggaran)
+                                    Folder/Bundle Fisik (Dipilih Otomatis)
+                                @else
+                                    Pilih Bundle Arsip Tersedia
+                                @endif
+                            </span>
                         </label>
                         
-                        @if($uploadOption === 'existing')
+                        @if($uploadOption === 'existing' || $useAnggaran)
                             <div style="padding-left: 24px;">
                                 <!-- Custom Dropdown for Livewire Search -->
                                 <div x-data="{ open: false }" style="position: relative;" @click.away="open = false">
@@ -470,6 +649,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     </div>
 
 
+                    @if(!$useAnggaran)
                     <!-- Option 2: New Bundle -->
                     <div style="margin-bottom: 24px; padding:12px; border:1px solid {{ $uploadOption === 'new' ? 'var(--primary)' : 'var(--border-color)' }}; border-radius:8px; background:{{ $uploadOption === 'new' ? 'var(--primary-light)' : 'white' }};">
                         <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom: {{ $uploadOption === 'new' ? '12px' : '0' }};">
@@ -498,6 +678,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                             </div>
                         @endif
                     </div>
+                    @endif
 
                     <!-- Upload File (Opsional) -->
                     <div style="margin-bottom: 24px;">

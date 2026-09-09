@@ -14,6 +14,7 @@ class Bundle extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'anggaran_id',
         'nama',
         'kode',
         'deskripsi',
@@ -51,6 +52,11 @@ class Bundle extends Model
     /**
      * Bundle has many kategoris.
      */
+    public function anggaran()
+    {
+        return $this->belongsTo(Anggaran::class, 'anggaran_id');
+    }
+
     public function kategoris(): HasMany
     {
         return $this->hasMany(Kategori::class)->orderBy('urutan');
