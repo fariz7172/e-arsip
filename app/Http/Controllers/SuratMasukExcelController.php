@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SuratMasukExport;
+use App\Exports\SuratMasukArsipExport;
 use App\Imports\SuratMasukImport;
 
 class SuratMasukExcelController extends Controller
@@ -12,6 +13,11 @@ class SuratMasukExcelController extends Controller
     public function export()
     {
         return Excel::download(new SuratMasukExport, 'surat_masuk_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function exportArsip()
+    {
+        return Excel::download(new SuratMasukArsipExport, 'arsip_surat_masuk_DIB_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
 
     public function import(Request $request)

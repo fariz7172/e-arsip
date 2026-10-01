@@ -56,7 +56,7 @@ class DeployApp extends Command
         $commands = [
             "cd $dir && pwd",
             "cd $dir && git pull origin $branch",
-            "cd $dir && php artisan migrate --force",
+            "cd $dir && php artisan optimize:clear",
         ];
 
         foreach ($commands as $cmd) {

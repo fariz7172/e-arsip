@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
     // Buku Agenda - Surat Masuk
     Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
     Route::middleware('role:superadmin,admin')->get('/surat-masuk/export', [\App\Http\Controllers\SuratMasukExcelController::class, 'export'])->name('surat-masuk.export');
+    Route::middleware('role:superadmin,admin')->get('/surat-masuk/export-arsip', [\App\Http\Controllers\SuratMasukExcelController::class, 'exportArsip'])->name('surat-masuk.export-arsip');
     Route::middleware('role:superadmin,admin')->post('/surat-masuk/import', [\App\Http\Controllers\SuratMasukExcelController::class, 'import'])->name('surat-masuk.import');
     Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
     Volt::route('/surat-masuk/{encrypted_id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');

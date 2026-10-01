@@ -65,9 +65,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 Template
             </a>
             
-            <a href="{{ route('surat-masuk.export') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export ke Excel">
+            <a href="{{ route('surat-masuk.export') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export Data Lengkap ke Excel">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
                 Export
+            </a>
+
+            <a href="{{ route('surat-masuk.export-arsip') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #06b6d4;" title="Export Format Daftar Isi Berkas (DIB) Arsip">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/><path d="M6 14h6"/></svg>
+                Export Arsip (DIB)
             </a>
 
             <form action="{{ route('surat-masuk.import') }}" method="POST" id="import_form" enctype="multipart/form-data" style="display:inline;">
