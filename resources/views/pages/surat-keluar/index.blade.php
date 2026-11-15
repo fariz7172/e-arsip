@@ -32,6 +32,17 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
         }
     }
 
+    public function updatedSelectedSurat()
+    {
+        $currentPageIds = $this->with()['surats']->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->selectAll = count($currentPageIds) > 0 && count(array_diff($currentPageIds, $this->selectedSurat)) === 0;
+    }
+
+    public function updatingPage()
+    {
+        $this->selectAll = false;
+    }
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -49,7 +60,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
     public function resetFilter()
     {
-        $this->reset(['search', 'tanggal_surat_dari', 'tanggal_surat_sampai']);
+        $this->reset(['search', 'tanggal_surat_dari', 'tanggal_surat_sampai', 'selectedSurat', 'selectAll']);
         $this->resetPage();
     }
 
@@ -120,6 +131,18 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
                 Export
             </a>
+
+            @if(count($selectedSurat) > 0)
+                <a href="{{ route('surat-keluar.export-dib-db', ['ids' => implode(',', $selectedSurat)]) }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; background: #059669; border-color: #059669; color: white; font-weight: 600;" title="Export Format Arsip Gabung (DIB & DB) terpilih ({{ count($selectedSurat) }} data)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Export DIB & DB ({{ count($selectedSurat) }})
+                </a>
+            @else
+                <a href="{{ route('surat-keluar.export-dib-db', array_filter(['search' => $search, 'tanggal_surat_dari' => $tanggal_surat_dari, 'tanggal_surat_sampai' => $tanggal_surat_sampai])) }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #059669; border-color: #a7f3d0; background: #ecfdf5; font-weight: 600;" title="Export Format Arsip Gabung (DIB & DB) sesuai filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                    Export DIB & DB
+                </a>
+            @endif
 
             <form action="{{ route('surat-keluar.import') }}" method="POST" id="import_form" enctype="multipart/form-data" style="display:inline;">
                 @csrf
@@ -202,13 +225,31 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             </div>
         </div>
 
+        @if(count($selectedSurat) > 0)
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: #065f46; font-size: 0.9rem;">
+                    <span style="font-weight: 700;">✓ {{ count($selectedSurat) }} surat dipilih</span>
+                    <span style="color: #64748b;">(Siap di-export ke format Arsip DIB & DB Excel atau dicetak)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{{ route('surat-keluar.export-dib-db', ['ids' => implode(',', $selectedSurat)]) }}" class="btn btn-sm btn-primary" style="background: #059669; border-color: #059669; color: white; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Export Excel Terpilih ({{ count($selectedSurat) }})
+                    </a>
+                    <button type="button" wire:click="$set('selectedSurat', [])" class="btn btn-sm btn-secondary" style="color: #64748b; font-size: 0.8rem;">
+                        Batal Pilih
+                    </button>
+                </div>
+            </div>
+        @endif
+
         @if($surats->count() > 0)
             <div class="table-container" style="overflow-x: auto;">
                 <table style="min-width: 1400px;">
                     <thead>
                         <tr>
-                            <th style="width: 40px; text-align: center;">
-                                <input type="checkbox" wire:model.live="selectAll" style="cursor: pointer;">
+                            <th style="width: 44px; text-align: center;">
+                                <input type="checkbox" wire:model.live="selectAll" style="cursor: pointer; width: 16px; height: 16px; accent-color: #059669;" title="Pilih Semua di Halaman Ini">
                             </th>
                             <th style="width: 60px; text-align: center;">No Urut</th>
                             <th style="width: 100px;">Tanggal</th>
@@ -223,9 +264,9 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     </thead>
                     <tbody>
                         @foreach($surats as $surat)
-                            <tr wire:key="surat-{{ $surat->id }}" class="{{ in_array($surat->id, $selectedSurat) ? 'bg-slate-50' : '' }}">
+                            <tr wire:key="surat-{{ $surat->id }}" style="{{ in_array((string)$surat->id, array_map('strval', $selectedSurat)) ? 'background-color: #ecfdf5;' : '' }}">
                                 <td style="text-align: center;">
-                                    <input type="checkbox" wire:model.live="selectedSurat" value="{{ $surat->id }}" style="cursor: pointer;">
+                                    <input type="checkbox" wire:model.live="selectedSurat" value="{{ (string)$surat->id }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #059669;">
                                 </td>
                                 <td style="text-align: center; font-weight: 700; color: var(--text-secondary);">{{ $surat->no_urut }}</td>
                                 <td>{{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</td>

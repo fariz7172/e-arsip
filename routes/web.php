@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
     // Buku Agenda - Surat Keluar
     Volt::route('/surat-keluar', 'surat-keluar.index')->name('surat-keluar.index');
     Route::middleware('role:superadmin,admin')->get('/surat-keluar/export', [\App\Http\Controllers\SuratKeluarExcelController::class, 'export'])->name('surat-keluar.export');
+    Route::middleware('role:superadmin,admin')->get('/surat-keluar/export-dib-db', [\App\Http\Controllers\SuratKeluarExcelController::class, 'exportDibDb'])->name('surat-keluar.export-dib-db');
     Route::middleware('role:superadmin,admin')->post('/surat-keluar/import', [\App\Http\Controllers\SuratKeluarExcelController::class, 'import'])->name('surat-keluar.import');
     Route::get('/surat-keluar/print-batch', [\App\Http\Controllers\SuratKeluarController::class, 'printBatch'])->name('surat-keluar.print-batch');
     Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
