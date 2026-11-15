@@ -10,9 +10,45 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class SuratMasukExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
 {
+    protected array $filters;
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
+
     public function collection()
     {
-        return SuratMasuk::orderBy('id', 'asc')->get();
+        $query = SuratMasuk::query();
+
+        if (!empty($this->filters['tanggal_surat_dari'])) {
+            $query->whereDate('tanggal', '>=', $this->filters['tanggal_surat_dari']);
+        }
+
+        if (!empty($this->filters['tanggal_surat_sampai'])) {
+            $query->whereDate('tanggal', '<=', $this->filters['tanggal_surat_sampai']);
+        }
+
+        if (!empty($this->filters['tanggal_acara_dari'])) {
+            $query->whereDate('tanggal_acara', '>=', $this->filters['tanggal_acara_dari']);
+        }
+
+        if (!empty($this->filters['tanggal_acara_sampai'])) {
+            $query->whereDate('tanggal_acara', '<=', $this->filters['tanggal_acara_sampai']);
+        }
+
+        if (!empty($this->filters['search'])) {
+            $search = $this->filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat', 'like', '%' . $search . '%')
+                  ->orWhere('kode', 'like', '%' . $search . '%')
+                  ->orWhere('perihal', 'like', '%' . $search . '%')
+                  ->orWhere('asal_surat', 'like', '%' . $search . '%')
+                  ->orWhere('distribusi', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query->orderBy('id', 'asc')->get();
     }
 
     public function headings(): array

@@ -10,9 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class SuratKeluarExcelController extends Controller
 {
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new SuratKeluarExport, 'surat_keluar_' . date('Ymd_His') . '.xlsx');
+        return Excel::download(new SuratKeluarExport($request->all()), 'surat_keluar_' . date('Ymd_His') . '.xlsx');
     }
 
     public function import(Request $request)

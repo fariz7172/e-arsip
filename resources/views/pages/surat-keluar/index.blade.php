@@ -14,6 +14,12 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     #[Url]
     public $perPage = 10;
 
+    #[Url]
+    public ?string $tanggal_surat_dari = '';
+
+    #[Url]
+    public ?string $tanggal_surat_sampai = '';
+
     public $selectedSurat = [];
     public $selectAll = false;
 
@@ -28,6 +34,22 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
 
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalSuratDari()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalSuratSampai()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilter()
+    {
+        $this->reset(['search', 'tanggal_surat_dari', 'tanggal_surat_sampai']);
         $this->resetPage();
     }
 
@@ -60,6 +82,14 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             });
         }
 
+        if (!empty($this->tanggal_surat_dari)) {
+            $query->whereDate('tanggal', '>=', $this->tanggal_surat_dari);
+        }
+
+        if (!empty($this->tanggal_surat_sampai)) {
+            $query->whereDate('tanggal', '<=', $this->tanggal_surat_sampai);
+        }
+
         return [
             'surats' => $query->paginate($this->perPage)
         ];
@@ -86,7 +116,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 Template
             </a>
             
-            <a href="{{ route('surat-keluar.export') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export ke Excel">
+            <a href="{{ route('surat-keluar.export', array_filter(['search' => $search, 'tanggal_surat_dari' => $tanggal_surat_dari, 'tanggal_surat_sampai' => $tanggal_surat_sampai])) }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export ke Excel">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
                 Export
             </a>
@@ -127,18 +157,48 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     @endif
 
     <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 500px;">
-                <select wire:model.live="perPage" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size:0.9rem; background: white; cursor: pointer;">
-                    <option value="10">10 Data</option>
-                    <option value="25">25 Data</option>
-                    <option value="50">50 Data</option>
-                    <option value="100">100 Data</option>
-                </select>
-                <div style="flex: 1; position: relative;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Urut, No Surat, Tujuan, Perihal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
+        <div class="card-header" style="display:flex; flex-direction:column; gap:14px; padding: 18px 20px;">
+            <!-- Baris 1: Per Page, Search & Reset Button -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
+                <div style="display: flex; gap: 12px; align-items: center; flex: 1; max-width: 500px;">
+                    <select wire:model.live="perPage" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size:0.9rem; background: white; cursor: pointer;">
+                        <option value="10">10 Data</option>
+                        <option value="25">25 Data</option>
+                        <option value="50">50 Data</option>
+                        <option value="100">100 Data</option>
+                    </select>
+                    <div style="flex: 1; position: relative;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Urut, No Surat, Tujuan, Perihal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
+                    </div>
                 </div>
+
+                @if($search || $tanggal_surat_dari || $tanggal_surat_sampai)
+                    <button type="button" wire:click="resetFilter" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #ef4444; border-color: #fca5a5; background: #fef2f2; font-weight: 600;" title="Kosongkan Semua Filter">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Reset Filter
+                    </button>
+                @endif
+            </div>
+
+            <!-- Baris 2: Filter Tanggal Surat -->
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+                        <span>📄</span> Tanggal Surat:
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="date" wire:model.live="tanggal_surat_dari" title="Dari Tanggal Surat" style="padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.82rem; background: white;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">s/d</span>
+                        <input type="date" wire:model.live="tanggal_surat_sampai" title="Sampai Tanggal Surat" style="padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.82rem; background: white;">
+                    </div>
+                </div>
+
+                @if($tanggal_surat_dari || $tanggal_surat_sampai)
+                    <span style="font-size: 0.78rem; color: #059669; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-weight: 600; border: 1px solid #a7f3d0;">
+                        ✓ Filter Aktif
+                    </span>
+                @endif
             </div>
         </div>
 

@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
     Volt::route('/surat-masuk', 'surat-masuk.index')->name('surat-masuk.index');
     Route::middleware('role:superadmin,admin')->get('/surat-masuk/export', [\App\Http\Controllers\SuratMasukExcelController::class, 'export'])->name('surat-masuk.export');
     Route::middleware('role:superadmin,admin')->get('/surat-masuk/export-arsip', [\App\Http\Controllers\SuratMasukExcelController::class, 'exportArsip'])->name('surat-masuk.export-arsip');
+    Route::middleware('role:superadmin,admin')->get('/surat-masuk/export-dib-db', [\App\Http\Controllers\SuratMasukExcelController::class, 'exportDibDb'])->name('surat-masuk.export-dib-db');
     Route::middleware('role:superadmin,admin')->post('/surat-masuk/import', [\App\Http\Controllers\SuratMasukExcelController::class, 'import'])->name('surat-masuk.import');
     Volt::route('/surat-masuk/create', 'surat-masuk.form')->name('surat-masuk.create');
     Volt::route('/surat-masuk/{encrypted_id}/edit', 'surat-masuk.form')->name('surat-masuk.edit');
@@ -88,6 +89,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/surat-keluar/print-batch', [\App\Http\Controllers\SuratKeluarController::class, 'printBatch'])->name('surat-keluar.print-batch');
     Volt::route('/surat-keluar/create', 'surat-keluar.form')->name('surat-keluar.create');
     Volt::route('/surat-keluar/{encrypted_id}/edit', 'surat-keluar.form')->name('surat-keluar.edit');
+
+    // Master Data - Kode Klasifikasi
+    Volt::route('/kode-klasifikasi', 'kode-klasifikasi.index')->name('kode-klasifikasi.index');
+    Route::middleware('role:superadmin,admin')->get('/kode-klasifikasi/export', [\App\Http\Controllers\KodeKlasifikasiExcelController::class, 'export'])->name('kode-klasifikasi.export');
+    Route::middleware('role:superadmin,admin')->get('/kode-klasifikasi/template', [\App\Http\Controllers\KodeKlasifikasiExcelController::class, 'template'])->name('kode-klasifikasi.template');
+    Route::middleware('role:superadmin,admin')->post('/kode-klasifikasi/import', [\App\Http\Controllers\KodeKlasifikasiExcelController::class, 'import'])->name('kode-klasifikasi.import');
 });
 
 // API Endpoint (Secured via api.token middleware)

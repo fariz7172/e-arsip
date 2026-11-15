@@ -14,6 +14,7 @@ class SuratMasuk extends Model
         'kode',
         'tanggal',
         'no_surat',
+        'jumlah_lembar',
         'perihal',
         'asal_surat',
         'tanggal_acara',
@@ -37,6 +38,7 @@ class SuratMasuk extends Model
         'is_reses' => 'boolean',
         'scan_file' => 'array',
         'detail_acaras' => 'array',
+        'jumlah_lembar' => 'integer',
     ];
 
     public function bundle()

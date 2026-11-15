@@ -1816,7 +1816,7 @@
                     </a>
                     
                     <!-- Buku Agenda Dropdown -->
-                    <div x-data="{ open: {{ request()->is('surat-masuk*') || request()->is('surat-keluar*') ? 'true' : 'false' }} }" style="margin-top: 16px;">
+                    <div x-data="{ open: {{ request()->is('surat-masuk*') || request()->is('surat-keluar*') || request()->is('kode-klasifikasi*') ? 'true' : 'false' }} }" style="margin-top: 16px;">
                         <button @click="open = !open" class="nav-link" style="width: 100%; border: none; background: transparent; cursor: pointer; padding-right: 12px; margin-bottom: 0;">
                             <div class="nav-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1836,6 +1836,11 @@
                             <a href="/surat-keluar" class="nav-link {{ request()->is('surat-keluar*') ? 'active' : '' }}" title="Surat Keluar" style="padding: 6px 12px; font-size: 0.8rem;">
                                 <span style="margin-right: 8px; opacity: 0.5;">•</span>
                                 <span class="nav-label">Surat Keluar</span>
+                            </a>
+
+                            <a href="/kode-klasifikasi" class="nav-link {{ request()->is('kode-klasifikasi*') ? 'active' : '' }}" title="Kode Klasifikasi" style="padding: 6px 12px; font-size: 0.8rem;">
+                                <span style="margin-right: 8px; opacity: 0.5;">•</span>
+                                <span class="nav-label">Kode Klasifikasi</span>
                             </a>
                         </div>
                     </div>

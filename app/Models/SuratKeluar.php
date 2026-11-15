@@ -10,6 +10,7 @@ class SuratKeluar extends Model
 
     protected $casts = [
         'scan_file' => 'array',
+        'jumlah_lembar' => 'integer',
     ];
 
     public function bundle()

@@ -10,14 +10,46 @@ use App\Imports\SuratMasukImport;
 
 class SuratMasukExcelController extends Controller
 {
-    public function export()
+    public function export(Request $request)
     {
-        return Excel::download(new SuratMasukExport, 'surat_masuk_' . date('Y-m-d_H-i-s') . '.xlsx');
+        return Excel::download(new SuratMasukExport($request->all()), 'surat_masuk_' . date('Y-m-d_H-i-s') . '.xlsx');
     }
 
-    public function exportArsip()
+    public function exportArsip(Request $request)
     {
-        return Excel::download(new SuratMasukArsipExport, 'arsip_surat_masuk_DIB_' . date('Y-m-d_H-i-s') . '.xlsx');
+        return Excel::download(new SuratMasukArsipExport($request->all()), 'arsip_surat_masuk_DIB_' . date('Y-m-d_H-i-s') . '.xlsx');
+    }
+
+    public function exportDibDb(Request $request)
+    {
+        $ids = null;
+        if ($request->has('ids') && !empty($request->input('ids'))) {
+            $rawIds = $request->input('ids');
+            $ids = is_array($rawIds) ? $rawIds : explode(',', $rawIds);
+            $ids = array_filter(array_map('trim', $ids));
+        }
+
+        $filters = $request->only([
+            'search',
+            'tanggal_surat_dari',
+            'tanggal_surat_sampai',
+            'tanggal_acara_dari',
+            'tanggal_acara_sampai',
+        ]);
+
+        $tahun = $request->input('tahun');
+
+        $exporter = new \App\Exports\SuratMasukDibDbExport($ids, $filters, $tahun);
+        $spreadsheet = $exporter->createSpreadsheet();
+
+        $filename = 'arsip_DIB_DB_surat_masuk_' . date('Y-m-d_H-i-s') . '.xlsx';
+
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 
     public function import(Request $request)

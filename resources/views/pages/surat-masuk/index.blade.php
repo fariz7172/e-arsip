@@ -14,8 +14,69 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     #[Url]
     public $perPage = 10;
 
+    #[Url]
+    public ?string $tanggal_surat_dari = '';
+
+    #[Url]
+    public ?string $tanggal_surat_sampai = '';
+
+    #[Url]
+    public ?string $tanggal_acara_dari = '';
+
+    #[Url]
+    public ?string $tanggal_acara_sampai = '';
+
+    public $selectedSurat = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            $this->selectedSurat = $this->with()['surats']->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedSurat = [];
+        }
+    }
+
+    public function updatedSelectedSurat()
+    {
+        $currentPageIds = $this->with()['surats']->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->selectAll = count($currentPageIds) > 0 && count(array_diff($currentPageIds, $this->selectedSurat)) === 0;
+    }
+
+    public function updatingPage()
+    {
+        $this->selectAll = false;
+    }
+
     public function updatingSearch()
     {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalSuratDari()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalSuratSampai()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalAcaraDari()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingTanggalAcaraSampai()
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilter()
+    {
+        $this->reset(['search', 'tanggal_surat_dari', 'tanggal_surat_sampai', 'tanggal_acara_dari', 'tanggal_acara_sampai', 'selectedSurat', 'selectAll']);
         $this->resetPage();
     }
 
@@ -46,6 +107,22 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
             });
         }
 
+        if (!empty($this->tanggal_surat_dari)) {
+            $query->whereDate('tanggal', '>=', $this->tanggal_surat_dari);
+        }
+
+        if (!empty($this->tanggal_surat_sampai)) {
+            $query->whereDate('tanggal', '<=', $this->tanggal_surat_sampai);
+        }
+
+        if (!empty($this->tanggal_acara_dari)) {
+            $query->whereDate('tanggal_acara', '>=', $this->tanggal_acara_dari);
+        }
+
+        if (!empty($this->tanggal_acara_sampai)) {
+            $query->whereDate('tanggal_acara', '<=', $this->tanggal_acara_sampai);
+        }
+
         return [
             'surats' => $query->paginate($this->perPage)
         ];
@@ -65,15 +142,27 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                 Template
             </a>
             
-            <a href="{{ route('surat-masuk.export') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export Data Lengkap ke Excel">
+            <a href="{{ route('surat-masuk.export', array_filter(['search' => $search, 'tanggal_surat_dari' => $tanggal_surat_dari, 'tanggal_surat_sampai' => $tanggal_surat_sampai, 'tanggal_acara_dari' => $tanggal_acara_dari, 'tanggal_acara_sampai' => $tanggal_acara_sampai])) }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #10b981;" title="Export Data Lengkap ke Excel">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
                 Export
             </a>
 
-            <a href="{{ route('surat-masuk.export-arsip') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #06b6d4;" title="Export Format Daftar Isi Berkas (DIB) Arsip">
+            <a href="{{ route('surat-masuk.export-arsip', array_filter(['search' => $search, 'tanggal_surat_dari' => $tanggal_surat_dari, 'tanggal_surat_sampai' => $tanggal_surat_sampai, 'tanggal_acara_dari' => $tanggal_acara_dari, 'tanggal_acara_sampai' => $tanggal_acara_sampai])) }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #06b6d4;" title="Export Format Daftar Isi Berkas (DIB) Arsip">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/><path d="M6 14h6"/></svg>
                 Export Arsip (DIB)
             </a>
+
+            @if(count($selectedSurat) > 0)
+                <a href="{{ route('surat-masuk.export-dib-db', ['ids' => implode(',', $selectedSurat)]) }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; background: #059669; border-color: #059669; color: white; font-weight: 600;" title="Export Format Arsip Gabung (DIB & DB) terpilih ({{ count($selectedSurat) }} data)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Export DIB & DB ({{ count($selectedSurat) }})
+                </a>
+            @else
+                <a href="{{ route('surat-masuk.export-dib-db', array_filter(['search' => $search, 'tanggal_surat_dari' => $tanggal_surat_dari, 'tanggal_surat_sampai' => $tanggal_surat_sampai, 'tanggal_acara_dari' => $tanggal_acara_dari, 'tanggal_acara_sampai' => $tanggal_acara_sampai])) }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #059669; border-color: #a7f3d0; background: #ecfdf5; font-weight: 600;" title="Export Format Arsip Gabung (DIB & DB) sesuai filter">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                    Export DIB & DB
+                </a>
+            @endif
 
             <form action="{{ route('surat-masuk.import') }}" method="POST" id="import_form" enctype="multipart/form-data" style="display:inline;">
                 @csrf
@@ -116,26 +205,91 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
     @endif
 
     <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div style="display: flex; gap: 12px; align-items: center; width: 100%; max-width: 500px;">
-                <select wire:model.live="perPage" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size:0.9rem; background: white; cursor: pointer;">
-                    <option value="10">10 Data</option>
-                    <option value="25">25 Data</option>
-                    <option value="50">50 Data</option>
-                    <option value="100">100 Data</option>
-                </select>
-                <div style="flex: 1; position: relative;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Surat, Perihal, Asal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
+        <div class="card-header" style="display:flex; flex-direction:column; gap:14px; padding: 18px 20px;">
+            <!-- Baris 1: Per Page, Search & Reset Button -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%;">
+                <div style="display: flex; gap: 12px; align-items: center; flex: 1; max-width: 500px;">
+                    <select wire:model.live="perPage" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size:0.9rem; background: white; cursor: pointer;">
+                        <option value="10">10 Data</option>
+                        <option value="25">25 Data</option>
+                        <option value="50">50 Data</option>
+                        <option value="100">100 Data</option>
+                    </select>
+                    <div style="flex: 1; position: relative;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari No Surat, Perihal, Asal..." style="padding: 8px 12px 8px 32px; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; font-size:0.9rem; outline: none;">
+                    </div>
                 </div>
+
+                @if($search || $tanggal_surat_dari || $tanggal_surat_sampai || $tanggal_acara_dari || $tanggal_acara_sampai)
+                    <button type="button" wire:click="resetFilter" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 6px; color: #ef4444; border-color: #fca5a5; background: #fef2f2; font-weight: 600;" title="Kosongkan Semua Filter">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        Reset Filter
+                    </button>
+                @endif
+            </div>
+
+            <!-- Baris 2: Filter Tanggal Surat & Tanggal Acara -->
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                
+                <!-- Filter Tanggal Surat -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #f8fafc; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+                        <span>📄</span> Tanggal Surat:
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="date" wire:model.live="tanggal_surat_dari" title="Dari Tanggal Surat" style="padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.82rem; background: white;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">s/d</span>
+                        <input type="date" wire:model.live="tanggal_surat_sampai" title="Sampai Tanggal Surat" style="padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.82rem; background: white;">
+                    </div>
+                </div>
+
+                <!-- Filter Tanggal Acara -->
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: #f0f9ff; padding: 6px 12px; border-radius: 6px; border: 1px solid #bae6fd;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #0284c7; display: flex; align-items: center; gap: 4px;">
+                        <span>📅</span> Tanggal Acara:
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <input type="date" wire:model.live="tanggal_acara_dari" title="Dari Tanggal Acara" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #bae6fd; font-size: 0.82rem; background: white;">
+                        <span style="font-size: 0.8rem; color: #0284c7;">s/d</span>
+                        <input type="date" wire:model.live="tanggal_acara_sampai" title="Sampai Tanggal Acara" style="padding: 5px 8px; border-radius: 5px; border: 1px solid #bae6fd; font-size: 0.82rem; background: white;">
+                    </div>
+                </div>
+
+                @if($tanggal_surat_dari || $tanggal_surat_sampai || $tanggal_acara_dari || $tanggal_acara_sampai)
+                    <span style="font-size: 0.78rem; color: #059669; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; font-weight: 600; border: 1px solid #a7f3d0;">
+                        ✓ Filter Aktif
+                    </span>
+                @endif
             </div>
         </div>
 
+        @if(count($selectedSurat) > 0)
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: #065f46; font-size: 0.9rem;">
+                    <span style="font-weight: 700;">✓ {{ count($selectedSurat) }} surat dipilih</span>
+                    <span style="color: #64748b;">(Siap di-export ke format Arsip DIB & DB Excel)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <a href="{{ route('surat-masuk.export-dib-db', ['ids' => implode(',', $selectedSurat)]) }}" class="btn btn-sm btn-primary" style="background: #059669; border-color: #059669; color: white; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Export Excel Terpilih ({{ count($selectedSurat) }})
+                    </a>
+                    <button type="button" wire:click="$set('selectedSurat', [])" class="btn btn-sm btn-secondary" style="color: #64748b; font-size: 0.8rem;">
+                        Batal Pilih
+                    </button>
+                </div>
+            </div>
+        @endif
+
         @if($surats->count() > 0)
             <div class="table-container" style="overflow-x: auto; width: 100%; max-width: 100%; border: 1px solid var(--border-color); border-radius: 8px;">
-                <table style="min-width: 1500px; width: 100%; border-collapse: collapse;">
+                <table style="min-width: 1550px; width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr>
+                            <th style="width: 44px; text-align: center;">
+                                <input type="checkbox" wire:model.live="selectAll" style="cursor: pointer; width: 16px; height: 16px; accent-color: #059669;" title="Pilih Semua di Halaman Ini">
+                            </th>
                             <th style="width: 60px; text-align: center;">Kode</th>
                             <th style="width: 100px;">Tanggal</th>
                             <th style="width: 150px;">No. Surat</th>
@@ -151,9 +305,19 @@ new #[\Livewire\Attributes\Layout('layouts.app')] #[\Livewire\Attributes\Title('
                     </thead>
                     <tbody>
                         @foreach($surats as $surat)
-                            <tr>
+                            <tr wire:key="surat-{{ $surat->id }}" style="{{ in_array((string)$surat->id, array_map('strval', $selectedSurat)) ? 'background-color: #ecfdf5;' : '' }}">
+                                <td style="text-align: center;">
+                                    <input type="checkbox" wire:model.live="selectedSurat" value="{{ (string)$surat->id }}" style="cursor: pointer; width: 16px; height: 16px; accent-color: #059669;">
+                                </td>
                                 <td style="text-align: center; font-weight: 700; color: var(--text-secondary);">{{ $surat->kode ?? '-' }}</td>
-                                <td>{{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</td>
+                                <td>
+                                    <div style="font-weight: 500;">{{ $surat->tanggal ? \Carbon\Carbon::parse($surat->tanggal)->format('d M Y') : '-' }}</div>
+                                    @if($surat->tanggal_acara)
+                                        <div style="font-size: 0.72rem; color: #0369a1; margin-top: 3px; display: inline-flex; align-items: center; gap: 3px; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;" title="Tanggal Acara">
+                                            <span>📅 Acara:</span> {{ \Carbon\Carbon::parse($surat->tanggal_acara)->format('d/m/Y') }}
+                                        </div>
+                                    @endif
+                                </td>
                                 <td style="font-family: monospace; font-size: 0.85rem; font-weight: 600;">{{ $surat->no_surat ?? '-' }}</td>
                                 <td>
                                     <div style="font-size:0.9rem; font-weight: 600; color:var(--text-primary); max-width:230px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ $surat->perihal }}">{{ $surat->perihal ?? '-' }}</div>

@@ -14,6 +14,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $no_urut;
     public $tanggal;
     public $no_surat;
+    public $jumlah_lembar = 1;
     public $tujuan_surat;
     public $perihal;
     public $tembusan;
@@ -64,6 +65,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->no_urut = $this->surat->no_urut;
             $this->tanggal = $this->surat->tanggal;
             $this->no_surat = $this->surat->no_surat;
+            $this->jumlah_lembar = $this->surat->jumlah_lembar ?? 1;
             $this->tujuan_surat = $this->surat->tujuan_surat;
             $this->perihal = $this->surat->perihal;
             $this->tembusan = $this->surat->tembusan;
@@ -79,6 +81,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->no_urut = $this->generateNextNoUrut();
             $this->lastGeneratedNoUrut = $this->no_urut;
             $this->tanggal = date('Y-m-d');
+            $this->jumlah_lembar = 1;
             $this->bundle_id = 2;
         }
     }
@@ -103,6 +106,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'no_urut' => 'nullable|integer',
             'tanggal' => 'nullable|date',
             'no_surat' => 'nullable|string|max:255',
+            'jumlah_lembar' => 'nullable|integer|min:1',
             'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:500',
             'tembusan' => 'nullable|string|max:500',
@@ -119,6 +123,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'no_urut' => $this->no_urut,
             'tanggal' => $this->tanggal ?: null,
             'no_surat' => $this->no_surat,
+            'jumlah_lembar' => $this->jumlah_lembar ? (int)$this->jumlah_lembar : 1,
             'tujuan_surat' => $this->tujuan_surat,
             'perihal' => $this->perihal,
             'tembusan' => $this->tembusan,
@@ -275,6 +280,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     <div style="margin-bottom: 12px;">
                         <label class="form-label" style="font-size: 0.85rem;">Nomor Surat (Fisik)</label>
                         <input type="text" wire:model="no_surat" class="form-input" style="width: 100%;" placeholder="Contoh: 456/TU/2026">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size: 0.85rem;">Lembar Surat</label>
+                        <input type="number" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57" wire:model="jumlah_lembar" class="form-input" style="width: 100%;" placeholder="Contoh: 1">
                     </div>
 
                     <div style="margin-bottom: 12px;">

@@ -22,3 +22,18 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+*.sql
+TOKEN API.txt
+backup_script.php
+check_db.php
+check_kode.php
+check_zip.php
+fix_dokumen_id.php
+import_db.php
+read_excel.php
+~$*
+public/assets/tes*.xlsx
+public/assets/surat_masuk_*.xlsx
+public/assets/surat-masuk-template.docx.xlsx
+
+

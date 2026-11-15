@@ -15,6 +15,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $kode;
     public $tanggal;
     public $no_surat;
+    public $jumlah_lembar = 1;
     public $perihal;
     public $asal_surat;
     public $tanggal_acara;
@@ -94,6 +95,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->kode = $this->surat->kode;
             $this->tanggal = $this->surat->tanggal;
             $this->no_surat = $this->surat->no_surat;
+            $this->jumlah_lembar = $this->surat->jumlah_lembar ?? 1;
             $this->perihal = $this->surat->perihal;
             $this->asal_surat = $this->surat->asal_surat;
             $this->tanggal_acara = $this->surat->tanggal_acara;
@@ -131,6 +133,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->kode = $this->generateNextKode();
             $this->lastGeneratedKode = $this->kode;
             $this->tanggal = date('Y-m-d');
+            $this->jumlah_lembar = 1;
             $this->sifat_surat = 'Biasa';
             $this->bundle_id = 1;
         }
@@ -168,6 +171,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'kode' => 'nullable|string|max:255',
             'tanggal' => 'nullable|date',
             'no_surat' => 'nullable|string|max:255',
+            'jumlah_lembar' => 'nullable|integer|min:1',
             'perihal' => 'required|string|max:500',
             'asal_surat' => 'nullable|string|max:255',
             'tanggal_acara' => 'nullable|date',
@@ -191,6 +195,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'kode' => $this->kode,
             'tanggal' => $this->tanggal ?: null,
             'no_surat' => $this->no_surat,
+            'jumlah_lembar' => $this->jumlah_lembar ? (int)$this->jumlah_lembar : 1,
             'perihal' => $this->perihal,
             'asal_surat' => $this->asal_surat,
             'tanggal_acara' => (count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['tanggal'] : $this->tanggal_acara) ?: null,
@@ -422,6 +427,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                     <div style="margin-bottom: 12px;">
                         <label class="form-label" style="font-size: 0.85rem;">Nomor Surat (Fisik)</label>
                         <input type="text" wire:model="no_surat" class="form-input" style="width: 100%;" placeholder="Contoh: 123/UM/2026">
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size: 0.85rem;">Lembar Surat</label>
+                        <input type="number" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57" wire:model="jumlah_lembar" class="form-input" style="width: 100%;" placeholder="Contoh: 1">
                     </div>
 
                     <div style="margin-bottom: 12px;">

@@ -9,9 +9,37 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class SuratKeluarExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected array $filters;
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
+
     public function collection()
     {
-        return SuratKeluar::orderBy('created_at', 'desc')->get();
+        $query = SuratKeluar::query();
+
+        if (!empty($this->filters['tanggal_surat_dari'])) {
+            $query->whereDate('tanggal', '>=', $this->filters['tanggal_surat_dari']);
+        }
+
+        if (!empty($this->filters['tanggal_surat_sampai'])) {
+            $query->whereDate('tanggal', '<=', $this->filters['tanggal_surat_sampai']);
+        }
+
+        if (!empty($this->filters['search'])) {
+            $search = $this->filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat', 'like', '%' . $search . '%')
+                  ->orWhere('no_urut', 'like', '%' . $search . '%')
+                  ->orWhere('perihal', 'like', '%' . $search . '%')
+                  ->orWhere('tujuan_surat', 'like', '%' . $search . '%')
+                  ->orWhere('tembusan', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query->orderBy('tanggal', 'desc')->orderByRaw('CAST(no_urut AS UNSIGNED) DESC')->get();
     }
 
     public function headings(): array

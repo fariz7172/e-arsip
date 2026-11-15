@@ -15,9 +15,45 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class SuratMasukArsipExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
 {
+    protected array $filters;
+
+    public function __construct(array $filters = [])
+    {
+        $this->filters = $filters;
+    }
+
     public function collection()
     {
-        return SuratMasuk::orderByRaw('CASE WHEN kode IS NULL OR kode = "" THEN 1 ELSE 0 END, CAST(kode AS UNSIGNED) ASC, id ASC')
+        $query = SuratMasuk::query();
+
+        if (!empty($this->filters['tanggal_surat_dari'])) {
+            $query->whereDate('tanggal', '>=', $this->filters['tanggal_surat_dari']);
+        }
+
+        if (!empty($this->filters['tanggal_surat_sampai'])) {
+            $query->whereDate('tanggal', '<=', $this->filters['tanggal_surat_sampai']);
+        }
+
+        if (!empty($this->filters['tanggal_acara_dari'])) {
+            $query->whereDate('tanggal_acara', '>=', $this->filters['tanggal_acara_dari']);
+        }
+
+        if (!empty($this->filters['tanggal_acara_sampai'])) {
+            $query->whereDate('tanggal_acara', '<=', $this->filters['tanggal_acara_sampai']);
+        }
+
+        if (!empty($this->filters['search'])) {
+            $search = $this->filters['search'];
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat', 'like', '%' . $search . '%')
+                  ->orWhere('kode', 'like', '%' . $search . '%')
+                  ->orWhere('perihal', 'like', '%' . $search . '%')
+                  ->orWhere('asal_surat', 'like', '%' . $search . '%')
+                  ->orWhere('distribusi', 'like', '%' . $search . '%');
+            });
+        }
+
+        return $query->orderByRaw('CASE WHEN kode IS NULL OR kode = "" THEN 1 ELSE 0 END, CAST(kode AS UNSIGNED) ASC, id ASC')
             ->get();
     }
 
@@ -69,7 +105,7 @@ class SuratMasukArsipExport implements FromCollection, WithHeadings, WithMapping
             'KR.01',                                    // KODE KLASIFIKASI
             $surat->perihal ?? '',                      // URAIAN INFORMASI ARSIP
             $tanggal,                                   // TANGGAL
-            1,                                          // JUMLAH LEMBAR
+            $surat->jumlah_lembar ?? 1,                 // JUMLAH LEMBAR
             'Tekstual',                                 // KETERANGAN
             'Heria Suwandi',                            // PEJABAT PENANDATANGAN
             'Asli',                                     // TINGKAT PERKEMBANGAN
