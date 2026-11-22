@@ -56,6 +56,12 @@ class SuratKeluarDibDbExport
             if (!empty($this->filters['tanggal_surat_sampai'])) {
                 $query->whereDate('tanggal', '<=', $this->filters['tanggal_surat_sampai']);
             }
+            if (!empty($this->filters['tgl_masuk_tu_dari'])) {
+                $query->whereDate('tgl_masuk_tu', '>=', $this->filters['tgl_masuk_tu_dari']);
+            }
+            if (!empty($this->filters['tgl_masuk_tu_sampai'])) {
+                $query->whereDate('tgl_masuk_tu', '<=', $this->filters['tgl_masuk_tu_sampai']);
+            }
             if (!empty($this->filters['search'])) {
                 $search = $this->filters['search'];
                 $query->where(function ($q) use ($search) {
@@ -376,3 +382,4 @@ class SuratKeluarDibDbExport
         return $spreadsheet;
     }
 }
+

@@ -22,6 +22,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $waktu_acara;
     public $tempat_acara;
     public $detail_acaras = [['tanggal' => '', 'waktu' => '', 'tempat' => '']];
+    public $tgl_masuk_tu;
     public $tgl_masuk;
     public $tgl_keluar;
     public $tgl_dikembalikan;
@@ -106,6 +107,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             } else {
                 $this->detail_acaras = [['tanggal' => $this->tanggal_acara, 'waktu' => $this->waktu_acara, 'tempat' => $this->tempat_acara]];
             }
+            $this->tgl_masuk_tu = $this->surat->tgl_masuk_tu;
             $this->tgl_masuk = $this->surat->tgl_masuk;
             $this->tgl_keluar = $this->surat->tgl_keluar;
             $this->tgl_dikembalikan = $this->surat->tgl_dikembalikan;
@@ -133,6 +135,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->kode = $this->generateNextKode();
             $this->lastGeneratedKode = $this->kode;
             $this->tanggal = date('Y-m-d');
+            $this->tgl_masuk_tu = date('Y-m-d');
             $this->jumlah_lembar = 1;
             $this->sifat_surat = 'Biasa';
             $this->bundle_id = 1;
@@ -178,6 +181,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'waktu_acara' => 'nullable|string|max:50',
             'tempat_acara' => 'nullable|string|max:255',
             'detail_acaras' => 'nullable|array',
+            'tgl_masuk_tu' => 'nullable|date',
             'tgl_masuk' => 'nullable|date',
             'tgl_keluar' => 'nullable|date',
             'tgl_dikembalikan' => 'nullable|date',
@@ -202,6 +206,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'waktu_acara' => (count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['waktu'] : $this->waktu_acara) ?: null,
             'tempat_acara' => count($this->detail_acaras) > 0 ? $this->detail_acaras[0]['tempat'] : $this->tempat_acara,
             'detail_acaras' => $this->detail_acaras,
+            'tgl_masuk_tu' => $this->tgl_masuk_tu ?: null,
             'tgl_masuk' => $this->tgl_masuk ?: null,
             'tgl_keluar' => $this->tgl_keluar ?: null,
             'tgl_dikembalikan' => $this->tgl_dikembalikan ?: null,
@@ -506,6 +511,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                                 @endif
                             </div>
                         </div>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size: 0.85rem;">TGL Masuk TU</label>
+                        <input type="date" wire:model="tgl_masuk_tu" class="form-input" style="width: 100%;">
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">

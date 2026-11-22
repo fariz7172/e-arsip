@@ -18,6 +18,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
     public $tujuan_surat;
     public $perihal;
     public $tembusan;
+    public $tgl_masuk_tu;
     public $tgl_masuk_kasubag;
     public $tgl_masuk_kasudin;
     public $tgl_keluar;
@@ -69,6 +70,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->tujuan_surat = $this->surat->tujuan_surat;
             $this->perihal = $this->surat->perihal;
             $this->tembusan = $this->surat->tembusan;
+            $this->tgl_masuk_tu = $this->surat->tgl_masuk_tu;
             $this->tgl_masuk_kasubag = $this->surat->tgl_masuk_kasubag;
             $this->tgl_masuk_kasudin = $this->surat->tgl_masuk_kasudin;
             $this->tgl_keluar = $this->surat->tgl_keluar;
@@ -81,6 +83,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             $this->no_urut = $this->generateNextNoUrut();
             $this->lastGeneratedNoUrut = $this->no_urut;
             $this->tanggal = date('Y-m-d');
+            $this->tgl_masuk_tu = date('Y-m-d');
             $this->jumlah_lembar = 1;
             $this->bundle_id = 2;
         }
@@ -110,6 +113,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'tujuan_surat' => 'required|string|max:255',
             'perihal' => 'required|string|max:500',
             'tembusan' => 'nullable|string|max:500',
+            'tgl_masuk_tu' => 'nullable|date',
             'tgl_masuk_kasubag' => 'nullable|date',
             'tgl_masuk_kasudin' => 'nullable|date',
             'tgl_keluar' => 'nullable|date',
@@ -127,6 +131,7 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
             'tujuan_surat' => $this->tujuan_surat,
             'perihal' => $this->perihal,
             'tembusan' => $this->tembusan,
+            'tgl_masuk_tu' => $this->tgl_masuk_tu ?: null,
             'tgl_masuk_kasubag' => $this->tgl_masuk_kasubag ?: null,
             'tgl_masuk_kasudin' => $this->tgl_masuk_kasudin ?: null,
             'tgl_keluar' => $this->tgl_keluar ?: null,
@@ -309,6 +314,11 @@ new #[\Livewire\Attributes\Layout('layouts.app')] class extends Component {
                 <div style="background: #fdf4ff; padding: 16px; border-radius: 8px; border: 1px solid #fbcfe8;">
                     <h3 style="font-size: 0.95rem; font-weight: 700; color: #a21caf; margin-bottom: 16px;">Tracking & Persetujuan Pimpinan</h3>
                     
+                    <div style="margin-bottom: 12px;">
+                        <label class="form-label" style="font-size: 0.85rem; color: #86198f;">TGL Masuk TU</label>
+                        <input type="date" wire:model="tgl_masuk_tu" class="form-input" style="width: 100%; border-color: #fbcfe8;">
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                         <div>
                             <label class="form-label" style="font-size: 0.85rem; color: #86198f;">Masuk KASUBAG</label>

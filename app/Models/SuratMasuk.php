@@ -21,6 +21,7 @@ class SuratMasuk extends Model
         'waktu_acara',
         'tempat_acara',
         'detail_acaras',
+        'tgl_masuk_tu',
         'tgl_masuk',
         'tgl_keluar',
         'tgl_dikembalikan',

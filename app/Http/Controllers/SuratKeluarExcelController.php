@@ -28,6 +28,8 @@ class SuratKeluarExcelController extends Controller
             'search',
             'tanggal_surat_dari',
             'tanggal_surat_sampai',
+            'tgl_masuk_tu_dari',
+            'tgl_masuk_tu_sampai',
         ]);
 
         $tahun = $request->input('tahun');
