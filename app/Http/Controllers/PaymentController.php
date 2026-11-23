@@ -9,6 +9,32 @@ use Illuminate\Support\Facades\Http;
 class PaymentController extends Controller
 {
     /**
+     * Sanitize API payload so non-nullable decimal columns default to 0 instead of null.
+     */
+    private function sanitizePaymentData(array $data): array
+    {
+        unset($data['created_at'], $data['updated_at']);
+
+        $nonNullableDecimals = [
+            'jumlah',
+            'tagihan_1',
+            'tagihan_2',
+            'tagihan_3',
+            'tagihan_4',
+            'tagihan_5',
+            'denda',
+        ];
+
+        foreach ($nonNullableDecimals as $field) {
+            if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
+                $data[$field] = 0;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Fetch payment from external API and sync to local DB.
      */
     public function sync($id)
@@ -23,8 +49,7 @@ class PaymentController extends Controller
                     return back()->with('error', 'Data tidak ditemukan di API.');
                 }
                 
-                // Remove timestamps if they conflict, though updateOrCreate handles them
-                unset($data['created_at'], $data['updated_at']);
+                $data = $this->sanitizePaymentData($data);
                 
                 $payment = Payment::updateOrCreate(
                     ['id' => $data['id']],
@@ -72,7 +97,7 @@ class PaymentController extends Controller
                     
                     if ($createdAt >= $request->start_date && $createdAt <= $request->end_date) {
                         
-                        unset($data['created_at'], $data['updated_at']);
+                        $data = $this->sanitizePaymentData($data);
                         Payment::updateOrCreate(
                             ['id' => $data['id']],
                             $data
